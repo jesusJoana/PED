@@ -2,6 +2,9 @@
 
 import contextlib
 import io
+import os
+import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -39,8 +42,13 @@ class MainModuleTest(unittest.TestCase):
         self.assertIn("Uso:", error_output.getvalue())
 
     def test_main_returns_success_when_arguments_are_valid(self):
-        # Con argumentos validos, esta iteracion todavia termina sin fork.
-        self.assertEqual(main.main(["datos.txt"]), 0)
+        # Con argumentos validos, main debe terminar correctamente.
+        output = io.StringIO()
+
+        with contextlib.redirect_stdout(output):
+            exit_code = main.main(["datos.txt"])
+
+        self.assertEqual(exit_code, 0)
 
     def test_read_requested_file_returns_file_content(self):
         # El servidor debe poder preparar como respuesta el contenido pedido.
@@ -67,6 +75,67 @@ class MainModuleTest(unittest.TestCase):
 
         self.assertIn("ERROR:", response)
         self.assertIn("no es un fichero", response)
+
+    def test_pipe_message_can_be_written_and_read(self):
+        # Un mensaje escrito en un pipe debe leerse igual desde el otro extremo.
+        read_fd, write_fd = os.pipe()
+
+        try:
+            main.write_message(write_fd, "peticion.txt")
+            os.close(write_fd)
+            write_fd = None
+
+            self.assertEqual(main.read_message(read_fd), "peticion.txt")
+        finally:
+            if write_fd is not None:
+                os.close(write_fd)
+            os.close(read_fd)
+
+    def test_pipe_empty_message_can_be_written_and_read(self):
+        # El mensaje vacio tambien debe cerrar bien el flujo sin bloquear.
+        read_fd, write_fd = os.pipe()
+
+        try:
+            main.write_message(write_fd, "")
+            os.close(write_fd)
+            write_fd = None
+
+            self.assertEqual(main.read_message(read_fd), "")
+        finally:
+            if write_fd is not None:
+                os.close(write_fd)
+            os.close(read_fd)
+
+    def test_pipe_large_message_can_be_read_in_chunks(self):
+        # Leemos por bloques para soportar respuestas mas grandes que un fragmento.
+        read_fd, write_fd = os.pipe()
+        message = "contenido\n" * 2000
+
+        try:
+            main.write_message(write_fd, message)
+            os.close(write_fd)
+            write_fd = None
+
+            self.assertEqual(main.read_message(read_fd), message)
+        finally:
+            if write_fd is not None:
+                os.close(write_fd)
+            os.close(read_fd)
+
+    def test_program_forks_and_child_prints_server_response(self):
+        # Ejecutamos el script completo para comprobar fork, pipes y salida real.
+        program = Path(__file__).resolve().parents[1] / "src" / "main.py"
+
+        result = subprocess.run(
+            [sys.executable, str(program), "peticion.txt"],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+
+        self.assertEqual(result.returncode, 0)
+        self.assertEqual(result.stdout, main.MINIMAL_SERVER_RESPONSE)
+        self.assertEqual(result.stderr, "")
 
 
 if __name__ == "__main__":
