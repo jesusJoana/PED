@@ -116,6 +116,7 @@ Crear el proceso hijo con `fork()` y comprobar la comunicacion basica entre clie
 - En el hijo, cerrar los extremos que no usa y ejecutar la logica de cliente.
 - En el padre, cerrar los extremos que no usa y ejecutar la logica de servidor.
 - Usar `os.waitpid()` en el padre.
+- Mantener el codigo directo y facil de seguir, sin pasar funciones como parametro.
 
 ## Iteracion 6: integracion con lectura real de ficheros
 
@@ -133,6 +134,7 @@ Unir la comunicacion cliente-servidor con la lectura real del fichero indicado p
 - El hijo enviara al padre la ruta recibida por parametro.
 - El padre leera esa ruta usando la funcion ya probada.
 - El padre devolvera la respuesta por el pipe de respuesta.
+- Incluir un fichero `prueba.txt` para poder ejecutar `make run` sin crear archivos manualmente.
 
 ## Iteracion 7: nombres de proceso `cli2` y `serv2`
 

@@ -7,7 +7,6 @@ from pathlib import Path
 
 USAGE = "Uso: python3 src/main.py <fichero.txt>"
 BUFFER_SIZE = 4096
-MINIMAL_SERVER_RESPONSE = "Respuesta del servidor"
 
 
 def validate_args(args):
@@ -73,11 +72,11 @@ def run_client(file_path, request_write_fd, response_read_fd):
 
 def run_server(request_read_fd, response_write_fd):
     # El servidor lee la peticion que llega desde el cliente.
-    read_message(request_read_fd)
+    requested_file = read_message(request_read_fd)
     os.close(request_read_fd)
 
-    # En esta iteracion la respuesta es minima; luego conectaremos la lectura real.
-    response = MINIMAL_SERVER_RESPONSE
+    # Con la ruta recibida, el servidor prepara el contenido o un error controlado.
+    response = read_requested_file(requested_file)
     write_message(response_write_fd, response)
     os.close(response_write_fd)
 
@@ -124,7 +123,7 @@ def main(argv=None):
         print(error, file=sys.stderr)
         return 1
 
-    # En esta iteracion arrancamos el cliente-servidor con respuesta minima.
+    # Arrancamos el cliente-servidor para pedir el fichero al proceso padre.
     return run_client_server(file_path)
 
 

@@ -122,19 +122,39 @@ class MainModuleTest(unittest.TestCase):
                 os.close(write_fd)
             os.close(read_fd)
 
-    def test_program_forks_and_child_prints_server_response(self):
-        # Ejecutamos el script completo para comprobar fork, pipes y salida real.
+    def test_program_prints_requested_file_content(self):
+        # Ejecutamos el script completo para comprobar lectura real con fork y pipes.
+        program = Path(__file__).resolve().parents[1] / "src" / "main.py"
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            file_path = Path(tmpdir) / "peticion.txt"
+            file_path.write_text("contenido real\nsegunda linea\n", encoding="utf-8")
+
+            result = subprocess.run(
+                [sys.executable, str(program), str(file_path)],
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+
+        self.assertEqual(result.returncode, 0)
+        self.assertEqual(result.stdout, "contenido real\nsegunda linea\n")
+        self.assertEqual(result.stderr, "")
+
+    def test_program_prints_error_when_requested_file_does_not_exist(self):
+        # Si el fichero no existe, el error tambien debe llegar al hijo.
         program = Path(__file__).resolve().parents[1] / "src" / "main.py"
 
         result = subprocess.run(
-            [sys.executable, str(program), "peticion.txt"],
+            [sys.executable, str(program), "no_existe.txt"],
             capture_output=True,
             text=True,
             check=False,
         )
 
         self.assertEqual(result.returncode, 0)
-        self.assertEqual(result.stdout, main.MINIMAL_SERVER_RESPONSE)
+        self.assertIn("ERROR:", result.stdout)
+        self.assertIn("no existe", result.stdout)
         self.assertEqual(result.stderr, "")
 
 

@@ -1,0 +1,3 @@
+Este es el fichero de prueba del proyecto.
+El proceso hijo pedira este contenido al proceso padre.
+El padre lo leera y lo devolvera por la tuberia de respuesta.
