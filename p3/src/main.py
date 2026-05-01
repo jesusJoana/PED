@@ -12,6 +12,7 @@ DEFAULT_REQUEST_FIFO = "/tmp/p3_cliente_servidor.fifo"
 DEFAULT_RESPONSE_FIFO = "/tmp/p3_servidor_cliente.fifo"
 CLIENT_PROCESS_NAME = "cli3"
 SERVER_PROCESS_NAME = "serv3"
+PROCESS_WAIT_SECONDS_ENV = "PED_WAIT_SECONDS"
 
 
 class FileRequest:
@@ -131,6 +132,15 @@ def set_process_name(name):
     libc.prctl(15, name.encode("utf-8"), 0, 0, 0)
 
 
+def wait_for_manual_check():
+    """Pausa opcionalmente el proceso para comprobar su nombre con ps."""
+    wait_seconds = float(os.environ.get(PROCESS_WAIT_SECONDS_ENV, "0"))
+    if wait_seconds > 0:
+        import time
+
+        time.sleep(wait_seconds)
+
+
 def main():
     """Crea cliente y servidor comunicados mediante FIFO."""
     filename = sys.argv[1] if len(sys.argv) > 1 else "prueba.txt"
@@ -140,6 +150,7 @@ def main():
     pid = os.fork()
     if pid == 0:
         set_process_name(CLIENT_PROCESS_NAME)
+        wait_for_manual_check()
         FileClient(filename).request_file(
             fifo_manager.request_fifo, fifo_manager.response_fifo
         )
@@ -147,6 +158,7 @@ def main():
 
     try:
         set_process_name(SERVER_PROCESS_NAME)
+        wait_for_manual_check()
         FileServer().serve_once(fifo_manager.request_fifo, fifo_manager.response_fifo)
         os.waitpid(pid, 0)
     finally:

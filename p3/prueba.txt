@@ -1,0 +1,2 @@
+Este es el contenido del fichero de prueba.
+El cliente pedira este fichero al servidor mediante FIFO.

@@ -1,0 +1,105 @@
+Practica p3: cliente-servidor de ficheros con FIFO
+===================================================
+
+Descripcion
+-----------
+
+Esta practica implementa en Python un sistema cliente-servidor local para leer ficheros de texto usando tuberias FIFO de UNIX.
+
+El programa principal esta en `src/main.py`. Al ejecutarse crea dos procesos mediante `fork()`:
+
+- El proceso hijo actua como cliente y se nombra `cli3`.
+- El proceso padre actua como servidor y se nombra `serv3`.
+- El cliente pide al servidor el contenido de un fichero `.txt`.
+- El servidor lee el fichero solicitado y devuelve su contenido.
+- El cliente muestra por pantalla la respuesta recibida.
+
+Estructura principal
+--------------------
+
+- `src/main.py`: codigo de la aplicacion.
+- `tests/`: pruebas unitarias desarrolladas con TDD.
+- `prueba.txt`: fichero de ejemplo para ejecutar la practica.
+- `docs/iteraciones_tdd.md`: plan de iteraciones TDD.
+- `INSTALL`: manual de instalacion.
+- `Makefile`: comandos de instalacion, test, ejecucion y limpieza.
+
+Ejecucion
+---------
+
+Para ejecutar la practica con el fichero de ejemplo:
+
+```sh
+python3 src/main.py prueba.txt
+```
+
+Tambien se puede usar el Makefile:
+
+```sh
+make run
+```
+
+Para pedir otro fichero:
+
+```sh
+make run FILE=otro_fichero.txt
+```
+
+Salida esperada con `prueba.txt`:
+
+```txt
+OK
+Este es el contenido del fichero de prueba.
+El cliente pedira este fichero al servidor mediante FIFO.
+```
+
+Comprobacion de procesos
+------------------------
+
+El programa permite pausar brevemente los procesos para comprobar sus nombres con `ps`.
+
+En una terminal, ejecutar:
+
+```sh
+PED_WAIT_SECONDS=10 python3 src/main.py prueba.txt
+```
+
+Mientras el programa esta pausado, en otra terminal ejecutar:
+
+```sh
+ps -e -o pid,comm,args | grep -E 'cli3|serv3'
+```
+
+Deben aparecer los procesos con los nombres:
+
+```txt
+cli3
+serv3
+```
+
+La variable `PED_WAIT_SECONDS` solo se usa para facilitar la comprobacion manual. Si no se define, el programa se ejecuta sin pausa.
+
+Tests
+-----
+
+Para ejecutar todos los tests:
+
+```sh
+python3 -m unittest discover -s tests -v
+```
+
+Si se ha creado el entorno virtual con `make install`, tambien se puede usar:
+
+```sh
+make test
+```
+
+Limpieza
+--------
+
+Para eliminar ficheros temporales de Python:
+
+```sh
+make clean
+```
+

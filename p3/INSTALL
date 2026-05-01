@@ -1,0 +1,84 @@
+Instalacion de la practica p3
+=============================
+
+Requisitos
+----------
+
+- Sistema UNIX/Linux con soporte para `fork()` y tuberias FIFO.
+- Python 3.
+- Comando `make`, opcional pero recomendado.
+
+No se necesitan dependencias externas de Python para ejecutar la practica.
+
+Instalacion recomendada
+-----------------------
+
+Desde el directorio `p3`, crear el entorno virtual:
+
+```sh
+make install
+```
+
+Este comando crea el directorio `venv` y actualiza `pip`. Si en el futuro existiera un fichero `requirements.txt`, tambien instalaria sus dependencias.
+
+Ejecucion de tests
+------------------
+
+Con el entorno virtual creado:
+
+```sh
+make test
+```
+
+Sin entorno virtual:
+
+```sh
+python3 -m unittest discover -s tests -v
+```
+
+Ejecucion de la aplicacion
+--------------------------
+
+Con el fichero de ejemplo:
+
+```sh
+make run
+```
+
+Con un fichero concreto:
+
+```sh
+make run FILE=nombre_fichero.txt
+```
+
+Tambien se puede ejecutar directamente:
+
+```sh
+python3 src/main.py prueba.txt
+```
+
+Comprobacion de nombres de proceso
+----------------------------------
+
+Para comprobar con `ps` que los procesos se llaman `cli3` y `serv3`, ejecutar:
+
+```sh
+PED_WAIT_SECONDS=10 python3 src/main.py prueba.txt
+```
+
+En otra terminal, mientras el programa esta pausado:
+
+```sh
+ps -e -o pid,comm,args | grep -E 'cli3|serv3'
+```
+
+Limpieza
+--------
+
+Para borrar caches de Python:
+
+```sh
+make clean
+```
+
+Las FIFO que usa la aplicacion se crean en `/tmp` y se eliminan automaticamente al terminar.
