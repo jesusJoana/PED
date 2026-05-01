@@ -1,9 +1,16 @@
+import ctypes
+import os
+import sys
 from pathlib import Path
 
 
 REQUEST_COMMAND = "GET"
 OK_PREFIX = "OK"
 FILE_NOT_FOUND_MESSAGE = "ERROR: fichero no encontrado"
+DEFAULT_REQUEST_FIFO = "/tmp/p3_cliente_servidor.fifo"
+DEFAULT_RESPONSE_FIFO = "/tmp/p3_servidor_cliente.fifo"
+CLIENT_PROCESS_NAME = "cli3"
+SERVER_PROCESS_NAME = "serv3"
 
 
 class FileRequest:
@@ -40,6 +47,15 @@ class FileServer:
             return FileResponse.file_not_found()
         return FileResponse.with_content(self.read_file(path))
 
+    def serve_once(self, request_fifo, response_fifo):
+        """Atiende una unica peticion recibida por FIFO."""
+        with open(request_fifo, "r", encoding="utf-8") as fifo:
+            request = FileRequest.from_message(fifo.read())
+
+        response = self.build_response_for_file(request.filename)
+        with open(response_fifo, "w", encoding="utf-8") as fifo:
+            fifo.write(response.to_message())
+
 
 class FileResponse:
     """Representa la respuesta que el servidor envia al cliente."""
@@ -70,3 +86,67 @@ class FifoManager:
         """Guarda las rutas de las tuberias de peticion y respuesta."""
         self.request_fifo = Path(request_fifo)
         self.response_fifo = Path(response_fifo)
+
+    def setup(self):
+        """Crea las tuberias FIFO si todavia no existen."""
+        self._create_fifo(self.request_fifo)
+        self._create_fifo(self.response_fifo)
+
+    def cleanup(self):
+        """Elimina las tuberias FIFO creadas por la aplicacion."""
+        for fifo_path in (self.request_fifo, self.response_fifo):
+            if fifo_path.exists():
+                fifo_path.unlink()
+
+    def _create_fifo(self, fifo_path):
+        """Crea una FIFO y acepta que ya exista previamente."""
+        if fifo_path.exists():
+            return
+        os.mkfifo(fifo_path)
+
+
+class FileClient:
+    """Representa el cliente que solicita un fichero al servidor."""
+
+    def __init__(self, filename):
+        """Guarda el fichero que se solicitara al servidor."""
+        self.filename = filename
+
+    def request_file(self, request_fifo, response_fifo):
+        """Envia la peticion por FIFO y muestra la respuesta recibida."""
+        request = FileRequest(self.filename)
+        with open(request_fifo, "w", encoding="utf-8") as fifo:
+            fifo.write(request.to_message())
+
+        with open(response_fifo, "r", encoding="utf-8") as fifo:
+            print(fifo.read())
+
+
+def set_process_name(name):
+    """Cambia el nombre visible del proceso en sistemas Linux."""
+    libc = ctypes.CDLL(None)
+    libc.prctl(15, name.encode("utf-8"), 0, 0, 0)
+
+
+def main():
+    """Crea cliente y servidor comunicados mediante FIFO."""
+    filename = sys.argv[1] if len(sys.argv) > 1 else "prueba.txt"
+    fifo_manager = FifoManager(DEFAULT_REQUEST_FIFO, DEFAULT_RESPONSE_FIFO)
+    fifo_manager.setup()
+
+    pid = os.fork()
+    if pid == 0:
+        set_process_name(CLIENT_PROCESS_NAME)
+        FileClient(filename).request_file(
+            fifo_manager.request_fifo, fifo_manager.response_fifo
+        )
+        sys.exit(0)
+
+    set_process_name(SERVER_PROCESS_NAME)
+    FileServer().serve_once(fifo_manager.request_fifo, fifo_manager.response_fifo)
+    os.waitpid(pid, 0)
+    fifo_manager.cleanup()
+
+
+if __name__ == "__main__":
+    main()
