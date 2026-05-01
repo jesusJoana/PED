@@ -1,3 +1,11 @@
+from pathlib import Path
+
+
+REQUEST_COMMAND = "GET"
+OK_PREFIX = "OK"
+FILE_NOT_FOUND_MESSAGE = "ERROR: fichero no encontrado"
+
+
 class FileRequest:
     """Representa una peticion de fichero realizada por el cliente."""
 
@@ -7,13 +15,13 @@ class FileRequest:
 
     def to_message(self):
         """Construye el mensaje que el cliente enviara al servidor."""
-        return f"GET {self.filename}"
+        return f"{REQUEST_COMMAND} {self.filename}"
 
     @classmethod
     def from_message(cls, message):
         """Crea una peticion a partir del mensaje recibido por el servidor."""
         parts = message.split()
-        if len(parts) != 2 or parts[0] != "GET":
+        if len(parts) != 2 or parts[0] != REQUEST_COMMAND:
             raise ValueError("Peticion no valida")
         return cls(parts[1])
 
@@ -23,13 +31,14 @@ class FileServer:
 
     def read_file(self, file_path):
         """Lee y devuelve el contenido de un fichero de texto."""
-        return file_path.read_text(encoding="utf-8")
+        return Path(file_path).read_text(encoding="utf-8")
 
     def build_response_for_file(self, file_path):
         """Construye la respuesta para el fichero solicitado."""
-        if not file_path.exists():
+        path = Path(file_path)
+        if not path.exists():
             return FileResponse.file_not_found()
-        return FileResponse.with_content(self.read_file(file_path))
+        return FileResponse.with_content(self.read_file(path))
 
 
 class FileResponse:
@@ -42,12 +51,12 @@ class FileResponse:
     @classmethod
     def with_content(cls, content):
         """Crea una respuesta correcta con el contenido del fichero."""
-        return cls(f"OK\n{content}")
+        return cls(f"{OK_PREFIX}\n{content}")
 
     @classmethod
     def file_not_found(cls):
         """Crea una respuesta de error para ficheros inexistentes."""
-        return cls("ERROR: fichero no encontrado")
+        return cls(FILE_NOT_FOUND_MESSAGE)
 
     def to_message(self):
         """Devuelve el texto completo de la respuesta."""
