@@ -61,3 +61,12 @@ class FileResponse:
     def to_message(self):
         """Devuelve el texto completo de la respuesta."""
         return self.message
+
+
+class FifoManager:
+    """Gestiona las tuberias FIFO usadas por cliente y servidor."""
+
+    def __init__(self, request_fifo, response_fifo):
+        """Guarda las rutas de las tuberias de peticion y respuesta."""
+        self.request_fifo = Path(request_fifo)
+        self.response_fifo = Path(response_fifo)
