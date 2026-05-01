@@ -1,1 +1,1 @@
-"""Paquete con la implementacion del proyecto cliente-servidor."""
+# Paquete con la implementacion del proyecto cliente-servidor.

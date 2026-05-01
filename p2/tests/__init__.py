@@ -1,1 +1,1 @@
-"""Pruebas automaticas del proyecto."""
+# Pruebas automaticas del proyecto.
