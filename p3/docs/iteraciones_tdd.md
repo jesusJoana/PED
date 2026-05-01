@@ -44,6 +44,11 @@ En las entregas de tipo `Test n OK`, el estado esperado sera que pasen todos los
 
 Crear un conjunto minimo de tests que compruebe que una instancia de `FileRequest` genera correctamente el mensaje de peticion para un fichero.
 
+Pruebas previstas:
+
+- Generar el mensaje para `datos.txt`.
+- Generar el mensaje para otro nombre de fichero, comprobando que no esta fijado en el codigo.
+
 Ejemplo:
 
 ```txt
@@ -65,6 +70,12 @@ Al terminar esta entrega, el asistente avisara al usuario de que `Test 1 OK` est
 ### Entrega: Test 2
 
 Crear un conjunto minimo de tests funcionalmente distinto que compruebe que `FileRequest` puede interpretar una peticion recibida y extraer el nombre del fichero solicitado.
+
+Pruebas previstas:
+
+- Interpretar una peticion valida.
+- Interpretar una peticion valida con espacios extra.
+- Rechazar una peticion con un comando no valido.
 
 Ejemplo:
 
@@ -92,6 +103,11 @@ Al terminar esta entrega, el asistente avisara al usuario de que `Test 2 OK` est
 
 Crear un conjunto minimo de tests funcionalmente distinto que compruebe que `FileServer` lee correctamente el contenido de un fichero `.txt` existente.
 
+Pruebas previstas:
+
+- Leer un fichero de texto de una sola linea.
+- Leer un fichero de texto con varias lineas, conservando los saltos de linea.
+
 Los tests usaran ficheros temporales para no depender de ficheros creados manualmente.
 
 Al terminar esta entrega, el asistente avisara al usuario de que `Test 3` esta listo para subir al repositorio remoto.
@@ -107,6 +123,12 @@ Al terminar esta entrega, el asistente avisara al usuario de que `Test 3 OK` est
 ### Entrega: Test 4
 
 Crear un conjunto minimo de tests funcionalmente distinto que compruebe que `FileResponse` genera correctamente una respuesta con contenido y una respuesta de error cuando el fichero pedido no existe.
+
+Pruebas previstas:
+
+- Crear una respuesta correcta con contenido de fichero.
+- Crear una respuesta de error para un fichero inexistente.
+- Comprobar que `FileServer` devuelve la respuesta de error cuando se solicita un fichero que no existe.
 
 El programa no debe finalizar con una excepcion no controlada.
 
@@ -140,6 +162,12 @@ Al terminar esta entrega, el asistente avisara al usuario de que `Refactor 1` es
 ### Entrega: Test 5
 
 Crear un conjunto minimo de tests funcionalmente distinto que compruebe que `FifoManager` crea correctamente las tuberias FIFO necesarias.
+
+Pruebas previstas:
+
+- Crear las dos tuberias FIFO necesarias.
+- Comprobar que volver a crear las mismas FIFO no provoca un fallo.
+- Comprobar que las rutas creadas son realmente FIFO de UNIX.
 
 Usaremos dos tuberias:
 
