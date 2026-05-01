@@ -1,0 +1,81 @@
+Instalacion del proyecto
+========================
+
+Requisitos
+----------
+
+- Sistema UNIX/Linux con soporte para `fork()` y pipes.
+- Python 3.
+- `make`.
+
+Pasos de instalacion
+--------------------
+
+1. Entrar en la carpeta del proyecto:
+
+   ```bash
+   cd p2
+   ```
+
+2. Crear el entorno virtual e instalar dependencias:
+
+   ```bash
+   make install
+   ```
+
+   Este comando crea la carpeta `venv/`, actualiza `pip` e instala lo indicado en `requirements.txt`.
+
+3. Verificar que las pruebas pasan:
+
+   ```bash
+   make test
+   ```
+
+4. Ejecutar el programa con el fichero incluido:
+
+   ```bash
+   make run
+   ```
+
+Dependencia setproctitle
+------------------------
+
+El proyecto usa `setproctitle` para cambiar el nombre visible de los procesos:
+
+- `serv2` para el proceso padre/servidor.
+- `cli2` para el proceso hijo/cliente.
+
+La instalacion de esta dependencia se hace automaticamente con:
+
+```bash
+make install
+```
+
+Comprobacion con ps
+-------------------
+
+Para poder ver los procesos antes de que terminen, se puede usar una pausa opcional:
+
+```bash
+PED_PROCESS_SLEEP=2 venv/bin/python src/main.py prueba.txt & pid=$!
+sleep 0.4
+ps -o pid,ppid,comm,args -p $pid --ppid $pid
+wait $pid
+```
+
+La salida esperada debe incluir `serv2` y `cli2`.
+
+Ejecucion con un fichero
+------------------------
+
+```bash
+make run FILE=prueba.txt
+```
+
+O directamente:
+
+```bash
+venv/bin/python src/main.py prueba.txt
+```
+
+Para usar otro fichero, sustituir `prueba.txt` por una ruta real existente.
