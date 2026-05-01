@@ -42,4 +42,11 @@ Para la valoración de la práctica se asignará a las diferentes entregas reali
 
 - Se definirán en el momento en el que te pide apoyo en la implementación del código y de la definición de las iteraciones necesarias.
 
+--- 
 
+### f) Entrega de contenido
+En el directorio de la práctica (dentro del repositorio) deberá figurar el siguiente material:
+- Manual de usuario (en un fichero de texto simple llamado README)
+- Manual de instalación (en un fichero de texto simple llamado INSTALL)
+
+---
