@@ -34,13 +34,15 @@ Cada entrega indicada en este plan debera subirse al repositorio remoto de forma
 
 El asistente preparara el estado de cada entrega y avisara cuando este lista, pero no realizara la subida al repositorio remoto. La subida la realizara siempre el usuario.
 
-En las entregas de tipo `Test n`, el estado esperado sera que falle unicamente el test nuevo anadido. En las entregas de tipo `Test n OK`, el estado esperado sera que pasen todos los tests acumulados. En las entregas de tipo `Refactor n`, no se anadiran nuevos tests y todos los tests deberan seguir pasando.
+En las entregas de tipo `Test n`, el estado esperado sera que pasen los tests anteriores y fallen unicamente los tests nuevos de esa entrega. Cada entrega `Test n` podra contener uno o varios tests, pero siempre seran un conjunto minimo y centrado en el comportamiento funcional planificado para esa iteracion.
+
+En las entregas de tipo `Test n OK`, el estado esperado sera que pasen todos los tests acumulados. En las entregas de tipo `Refactor n`, no se anadiran nuevos tests y todos los tests deberan seguir pasando.
 
 ## Iteracion 1: crear peticiones del cliente
 
 ### Entrega: Test 1
 
-Crear un test que compruebe que una instancia de `FileRequest` genera correctamente el mensaje de peticion para un fichero.
+Crear un conjunto minimo de tests que compruebe que una instancia de `FileRequest` genera correctamente el mensaje de peticion para un fichero.
 
 Ejemplo:
 
@@ -48,13 +50,13 @@ Ejemplo:
 GET datos.txt
 ```
 
-En esta entrega el test debera fallar porque el metodo todavia no estara implementado.
+En esta entrega los tests nuevos deberan fallar porque el metodo todavia no estara implementado.
 
 Al terminar esta entrega, el asistente avisara al usuario de que `Test 1` esta listo para subir al repositorio remoto.
 
 ### Entrega: Test 1 OK
 
-Implementar el metodo minimo en `FileRequest` para que el test pase.
+Implementar el metodo minimo en `FileRequest` para que los tests pasen.
 
 Al terminar esta entrega, el asistente avisara al usuario de que `Test 1 OK` esta listo para subir al repositorio remoto.
 
@@ -62,7 +64,7 @@ Al terminar esta entrega, el asistente avisara al usuario de que `Test 1 OK` est
 
 ### Entrega: Test 2
 
-Crear un test funcionalmente distinto que compruebe que `FileRequest` puede interpretar una peticion recibida y extraer el nombre del fichero solicitado.
+Crear un conjunto minimo de tests funcionalmente distinto que compruebe que `FileRequest` puede interpretar una peticion recibida y extraer el nombre del fichero solicitado.
 
 Ejemplo:
 
@@ -88,9 +90,9 @@ Al terminar esta entrega, el asistente avisara al usuario de que `Test 2 OK` est
 
 ### Entrega: Test 3
 
-Crear un test funcionalmente distinto que compruebe que `FileServer` lee correctamente el contenido de un fichero `.txt` existente.
+Crear un conjunto minimo de tests funcionalmente distinto que compruebe que `FileServer` lee correctamente el contenido de un fichero `.txt` existente.
 
-El test usara un fichero temporal para no depender de ficheros creados manualmente.
+Los tests usaran ficheros temporales para no depender de ficheros creados manualmente.
 
 Al terminar esta entrega, el asistente avisara al usuario de que `Test 3` esta listo para subir al repositorio remoto.
 
@@ -104,7 +106,7 @@ Al terminar esta entrega, el asistente avisara al usuario de que `Test 3 OK` est
 
 ### Entrega: Test 4
 
-Crear un test funcionalmente distinto que compruebe que `FileResponse` genera correctamente una respuesta con contenido y una respuesta de error cuando el fichero pedido no existe.
+Crear un conjunto minimo de tests funcionalmente distinto que compruebe que `FileResponse` genera correctamente una respuesta con contenido y una respuesta de error cuando el fichero pedido no existe.
 
 El programa no debe finalizar con una excepcion no controlada.
 
@@ -137,7 +139,7 @@ Al terminar esta entrega, el asistente avisara al usuario de que `Refactor 1` es
 
 ### Entrega: Test 5
 
-Crear un test funcionalmente distinto que compruebe que `FifoManager` crea correctamente las tuberias FIFO necesarias.
+Crear un conjunto minimo de tests funcionalmente distinto que compruebe que `FifoManager` crea correctamente las tuberias FIFO necesarias.
 
 Usaremos dos tuberias:
 
