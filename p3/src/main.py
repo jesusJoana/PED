@@ -1,5 +1,6 @@
 import ctypes
 import os
+import stat
 import sys
 from pathlib import Path
 
@@ -95,12 +96,14 @@ class FifoManager:
     def cleanup(self):
         """Elimina las tuberias FIFO creadas por la aplicacion."""
         for fifo_path in (self.request_fifo, self.response_fifo):
-            if fifo_path.exists():
+            if fifo_path.exists() and stat.S_ISFIFO(fifo_path.stat().st_mode):
                 fifo_path.unlink()
 
     def _create_fifo(self, fifo_path):
         """Crea una FIFO y acepta que ya exista previamente."""
         if fifo_path.exists():
+            if not stat.S_ISFIFO(fifo_path.stat().st_mode):
+                raise ValueError(f"La ruta existe y no es FIFO: {fifo_path}")
             return
         os.mkfifo(fifo_path)
 
@@ -142,10 +145,12 @@ def main():
         )
         sys.exit(0)
 
-    set_process_name(SERVER_PROCESS_NAME)
-    FileServer().serve_once(fifo_manager.request_fifo, fifo_manager.response_fifo)
-    os.waitpid(pid, 0)
-    fifo_manager.cleanup()
+    try:
+        set_process_name(SERVER_PROCESS_NAME)
+        FileServer().serve_once(fifo_manager.request_fifo, fifo_manager.response_fifo)
+        os.waitpid(pid, 0)
+    finally:
+        fifo_manager.cleanup()
 
 
 if __name__ == "__main__":
