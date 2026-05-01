@@ -153,7 +153,8 @@ Nombrar los procesos para que puedan comprobarse con el comando `ps`.
 - Usar la libreria `setproctitle`.
 - Anadir `setproctitle` a `requirements.txt`.
 - Ajustar `make install` para instalar dependencias desde `requirements.txt`.
-- Incluir una forma sencilla de ver los procesos durante una ejecucion de prueba si hiciera falta.
+- Nombrar al hijo como `cli2` y al padre como `serv2`.
+- Incluir la variable `PED_PROCESS_SLEEP` para pausar unos segundos y poder comprobar los nombres con `ps`.
 
 ## Iteracion 8: documentacion final
 

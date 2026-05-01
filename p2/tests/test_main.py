@@ -8,6 +8,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 from src import main
 
@@ -30,6 +31,26 @@ class MainModuleTest(unittest.TestCase):
         # El programa solo acepta un fichero por ejecucion.
         with self.assertRaisesRegex(ValueError, "Uso"):
             main.validate_args(["uno.txt", "dos.txt"])
+
+    def test_set_process_name_uses_setproctitle(self):
+        # El nombre del proceso se cambia usando la libreria setproctitle.
+        with mock.patch.object(main, "setproctitle") as fake_setproctitle:
+            main.set_process_name("cli2")
+
+        fake_setproctitle.assert_called_once_with("cli2")
+
+    def test_process_names_are_cli2_and_serv2(self):
+        # Dejamos los nombres en constantes para no escribirlos a mano varias veces.
+        self.assertEqual(main.CLIENT_PROCESS_NAME, "cli2")
+        self.assertEqual(main.SERVER_PROCESS_NAME, "serv2")
+
+    def test_sleep_if_requested_uses_environment_value(self):
+        # La pausa opcional permite comprobar los procesos con ps.
+        with mock.patch.dict(os.environ, {main.PROCESS_SLEEP_ENV: "1.5"}):
+            with mock.patch.object(main.time, "sleep") as fake_sleep:
+                main.sleep_if_requested()
+
+        fake_sleep.assert_called_once_with(1.5)
 
     def test_main_returns_error_when_arguments_are_invalid(self):
         # main convierte los errores de uso en codigo de salida fallido.

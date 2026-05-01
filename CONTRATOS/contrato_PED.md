@@ -32,7 +32,14 @@ Para la valoración de la práctica se asignará a las diferentes entregas reali
 
 ---
 
-### d) Características de la aplicación a desarrollar
+### d) Características del código implementado
+
+- Todo el código y los test deberán estar comentados brevemente para que se entienda que hace cada una de las funciones y cada uno de los test.
+- El estilo de programación deberá adecuarse a un nivel medio de tal forma que se evitarán lineas de código complejo de interpretación o entendimiento.
+
+---
+### e) Características de la aplicación a desarrollar
 
 - Se definirán en el momento en el que te pide apoyo en la implementación del código y de la definición de las iteraciones necesarias.
+
 

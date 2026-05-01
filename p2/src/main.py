@@ -2,11 +2,17 @@
 
 import os
 import sys
+import time
 from pathlib import Path
+
+from setproctitle import setproctitle
 
 
 USAGE = "Uso: python3 src/main.py <fichero.txt>"
 BUFFER_SIZE = 4096
+CLIENT_PROCESS_NAME = "cli2"
+SERVER_PROCESS_NAME = "serv2"
+PROCESS_SLEEP_ENV = "PED_PROCESS_SLEEP"
 
 
 def validate_args(args):
@@ -35,6 +41,19 @@ def read_requested_file(file_path):
         return f"ERROR: no se pudo leer '{file_path}': {error}"
 
 
+def set_process_name(process_name):
+    # setproctitle cambia el nombre visible del proceso en comandos como ps.
+    setproctitle(process_name)
+
+
+def sleep_if_requested():
+    # Esta pausa opcional ayuda a comprobar los nombres con ps durante pruebas manuales.
+    seconds = os.environ.get(PROCESS_SLEEP_ENV)
+
+    if seconds:
+        time.sleep(float(seconds))
+
+
 def write_message(fd, message):
     # Convertimos el texto a bytes porque los pipes trabajan con bytes.
     data = message.encode("utf-8")
@@ -60,6 +79,10 @@ def read_message(fd):
 
 
 def run_client(file_path, request_write_fd, response_read_fd):
+    # El hijo se identifica como cli2 para poder verlo con ps.
+    set_process_name(CLIENT_PROCESS_NAME)
+    sleep_if_requested()
+
     # El cliente envia al servidor la ruta que quiere consultar.
     write_message(request_write_fd, file_path)
     os.close(request_write_fd)
@@ -71,6 +94,10 @@ def run_client(file_path, request_write_fd, response_read_fd):
 
 
 def run_server(request_read_fd, response_write_fd):
+    # El padre se identifica como serv2 para poder verlo con ps.
+    set_process_name(SERVER_PROCESS_NAME)
+    sleep_if_requested()
+
     # El servidor lee la peticion que llega desde el cliente.
     requested_file = read_message(request_read_fd)
     os.close(request_read_fd)
