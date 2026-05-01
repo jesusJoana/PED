@@ -2,7 +2,6 @@
 
 import os
 import sys
-from collections.abc import Callable
 from pathlib import Path
 
 
@@ -11,7 +10,7 @@ BUFFER_SIZE = 4096
 MINIMAL_SERVER_RESPONSE = "Respuesta del servidor"
 
 
-def validate_args(args: list[str]) -> str:
+def validate_args(args):
     # El programa solo acepta una ruta de fichero por ejecucion.
     if len(args) != 1:
         raise ValueError(USAGE)
@@ -19,7 +18,7 @@ def validate_args(args: list[str]) -> str:
     return args[0]
 
 
-def read_requested_file(file_path: str) -> str:
+def read_requested_file(file_path):
     # Esta funcion representa la parte del servidor que prepara la respuesta.
     path = Path(file_path)
 
@@ -37,7 +36,7 @@ def read_requested_file(file_path: str) -> str:
         return f"ERROR: no se pudo leer '{file_path}': {error}"
 
 
-def write_message(fd: int, message: str) -> None:
+def write_message(fd, message):
     # Convertimos el texto a bytes porque los pipes trabajan con bytes.
     data = message.encode("utf-8")
 
@@ -47,7 +46,7 @@ def write_message(fd: int, message: str) -> None:
         data = data[written:]
 
 
-def read_message(fd: int) -> str:
+def read_message(fd):
     # Leemos hasta EOF; EOF llega cuando el proceso emisor cierra su extremo.
     chunks = []
 
@@ -61,7 +60,7 @@ def read_message(fd: int) -> str:
     return b"".join(chunks).decode("utf-8")
 
 
-def run_client(file_path: str, request_write_fd: int, response_read_fd: int) -> None:
+def run_client(file_path, request_write_fd, response_read_fd):
     # El cliente envia al servidor la ruta que quiere consultar.
     write_message(request_write_fd, file_path)
     os.close(request_write_fd)
@@ -72,29 +71,21 @@ def run_client(file_path: str, request_write_fd: int, response_read_fd: int) -> 
     print(response, end="", flush=True)
 
 
-def run_server(
-    request_read_fd: int,
-    response_write_fd: int,
-    response_builder: Callable[[str], str],
-) -> None:
+def run_server(request_read_fd, response_write_fd):
     # El servidor lee la peticion que llega desde el cliente.
-    requested_file = read_message(request_read_fd)
+    read_message(request_read_fd)
     os.close(request_read_fd)
 
     # En esta iteracion la respuesta es minima; luego conectaremos la lectura real.
-    response = response_builder(requested_file)
+    response = MINIMAL_SERVER_RESPONSE
     write_message(response_write_fd, response)
     os.close(response_write_fd)
 
 
-def run_client_server(
-    file_path: str,
-    response_builder: Callable[[str], str] | None = None,
-) -> int:
+def run_client_server(file_path):
     # Usamos dos pipes: uno para la peticion y otro para la respuesta.
     request_read_fd, request_write_fd = os.pipe()
     response_read_fd, response_write_fd = os.pipe()
-    build_response = response_builder or (lambda _requested_file: MINIMAL_SERVER_RESPONSE)
 
     pid = os.fork()
 
@@ -115,14 +106,14 @@ def run_client_server(
     os.close(response_read_fd)
 
     try:
-        run_server(request_read_fd, response_write_fd, build_response)
+        run_server(request_read_fd, response_write_fd)
     finally:
         _child_pid, child_status = os.waitpid(pid, 0)
 
     return os.waitstatus_to_exitcode(child_status)
 
 
-def main(argv: list[str] | None = None) -> int:
+def main(argv=None):
     # Permitimos pasar argv desde los tests; en ejecucion real usamos sys.argv.
     args = sys.argv[1:] if argv is None else argv
 
