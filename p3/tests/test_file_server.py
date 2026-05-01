@@ -26,6 +26,14 @@ class FileServerTest(unittest.TestCase):
 
             self.assertEqual("linea 1\nlinea 2\n", server.read_file(file_path))
 
+    def test_build_error_response_when_file_does_not_exist(self):
+        """Comprueba que el servidor responde con error si falta el fichero."""
+        server = FileServer()
+
+        response = server.build_response_for_file(Path("no_existe.txt"))
+
+        self.assertEqual("ERROR: fichero no encontrado", response.to_message())
+
 
 if __name__ == "__main__":
     unittest.main()

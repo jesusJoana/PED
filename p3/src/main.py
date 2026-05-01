@@ -24,3 +24,9 @@ class FileServer:
     def read_file(self, file_path):
         """Lee y devuelve el contenido de un fichero de texto."""
         return file_path.read_text(encoding="utf-8")
+
+
+class FileResponse:
+    """Representa la respuesta que el servidor envia al cliente."""
+
+    pass
