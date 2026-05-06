@@ -1,0 +1,4 @@
+#!/bin/sh
+# Wrapper para que ps muestre el nombre cli4.
+DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+exec "$DIR/venv/bin/python" "$DIR/src/main.py" client "$@"

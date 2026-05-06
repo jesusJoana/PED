@@ -8,6 +8,8 @@ import unittest
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(__file__))
 MAIN_PATH = os.path.join(PROJECT_ROOT, "src", "main.py")
+SERV4_PATH = os.path.join(PROJECT_ROOT, "serv4")
+CLI4_PATH = os.path.join(PROJECT_ROOT, "cli4")
 
 
 class IntegracionTest(unittest.TestCase):
@@ -143,6 +145,81 @@ class IntegracionTest(unittest.TestCase):
             timeout=5,
             check=False,
         )
+
+    # ============================================================
+    # Iteracion 3
+    # ============================================================
+
+    def test_iteracion_3_procesos_muestran_serv4_y_cli4_en_ps(self):
+        socket_path = os.path.join(tempfile.gettempdir(), "serv4_integracion_3.sock")
+        fifo_path = os.path.join(tempfile.gettempdir(), "fifo_cli4_integracion_3")
+        server_process = None
+        client_process = None
+
+        self.assertTrue(os.path.exists(SERV4_PATH), "No existe el ejecutable serv4")
+        self.assertTrue(os.access(SERV4_PATH, os.X_OK), "serv4 no es ejecutable")
+        self.assertTrue(os.path.exists(CLI4_PATH), "No existe el ejecutable cli4")
+        self.assertTrue(os.access(CLI4_PATH, os.X_OK), "cli4 no es ejecutable")
+
+        if os.path.exists(socket_path):
+            os.unlink(socket_path)
+        if os.path.exists(fifo_path):
+            os.unlink(fifo_path)
+
+        os.mkfifo(fifo_path)
+
+        try:
+            server_process = subprocess.Popen(
+                [SERV4_PATH, "--socket", socket_path],
+                cwd=PROJECT_ROOT,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+            self._wait_for_socket(socket_path)
+
+            self.assertIn("serv4", self._ps_args(server_process.pid))
+
+            # El FIFO mantiene al cliente bloqueado esperando respuesta,
+            # lo que permite comprobar su nombre mediante ps.
+            client_process = subprocess.Popen(
+                [CLI4_PATH, fifo_path, "--socket", socket_path],
+                cwd=PROJECT_ROOT,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+
+            client_args = self._wait_for_process_args(client_process.pid, "cli4")
+            self.assertIn("cli4", client_args)
+        finally:
+            if client_process is not None and client_process.poll() is None:
+                client_process.terminate()
+                client_process.wait(timeout=5)
+            if server_process is not None and server_process.poll() is None:
+                server_process.terminate()
+                server_process.wait(timeout=5)
+            if os.path.exists(socket_path):
+                os.unlink(socket_path)
+            if os.path.exists(fifo_path):
+                os.unlink(fifo_path)
+
+    def _ps_args(self, pid):
+        result = subprocess.run(
+            ["ps", "-p", str(pid), "-o", "args="],
+            capture_output=True,
+            text=True,
+            timeout=5,
+            check=False,
+        )
+        return result.stdout.strip()
+
+    def _wait_for_process_args(self, pid, expected_text):
+        deadline = time.time() + 5
+        while time.time() < deadline:
+            args = self._ps_args(pid)
+            if expected_text in args:
+                return args
+            time.sleep(0.05)
+        self.fail(f"No aparece {expected_text} en ps para el proceso {pid}")
 
 
 if __name__ == "__main__":

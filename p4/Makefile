@@ -16,13 +16,13 @@ test:
 	$(PY) -m unittest discover -s tests -v
 
 run:
-	$(PY) src/main.py client $(FILE) --socket $(SOCKET)
+	./cli4 $(FILE) --socket $(SOCKET)
 
 server:
-	$(PY) src/main.py server --socket $(SOCKET)
+	./serv4 --socket $(SOCKET)
 
 client:
-	$(PY) src/main.py client $(FILE) --socket $(SOCKET)
+	./cli4 $(FILE) --socket $(SOCKET)
 
 clean:
 	find . -type d -name "__pycache__" -exec rm -rf {} +
