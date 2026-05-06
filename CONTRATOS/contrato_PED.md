@@ -163,6 +163,29 @@ Siempre que sea razonable, las pruebas utilizarán:
 - FIFOs reales,
 - pipes reales.
 
+### Uso de sockets y mocks en pruebas
+
+Cuando el mecanismo IPC especificado en el enunciado sea una parte esencial del ejercicio
+(por ejemplo sockets UDS, sockets TCP/IP, FIFOs o pipes), las pruebas deberán utilizar
+dicho mecanismo real siempre que sea razonable dentro del entorno Linux objetivo.
+
+En particular, no se deberán mockear sockets, FIFOs, pipes u otros mecanismos IPC solo
+por tratarse de pruebas unitarias. Se asumirá que las librerías estándar del sistema y de
+Python funcionan correctamente, pero se probará que nuestro código las utiliza de forma
+adecuada y cumple el protocolo requerido.
+
+La diferencia entre pruebas unitarias e integración no vendrá determinada por usar mocks,
+sino por el alcance de la prueba:
+
+- Las pruebas unitarias validarán una responsabilidad concreta de una clase o módulo,
+  pudiendo usar recursos reales del sistema como ficheros temporales o sockets locales.
+- Las pruebas de integración validarán la colaboración completa entre componentes,
+  normalmente ejecutando cliente y servidor reales, y comprobando el flujo extremo a extremo.
+
+El uso de mocks quedará limitado a casos excepcionales, como simular errores difíciles de
+provocar de forma fiable, evitar dependencias externas ajenas al ejercicio, o aislar una
+condición no reproducible en el entorno de pruebas.
+
 El uso de mocks deberá limitarse únicamente a:
 
 - aislamiento razonable,

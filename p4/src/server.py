@@ -1,9 +1,7 @@
 import os
 import socket
 
-
-DEFAULT_SOCKET_PATH = "/tmp/serv4.sock"
-BUFFER_SIZE = 4096
+from config import BUFFER_SIZE, DEFAULT_SOCKET_PATH
 
 
 class FileServer:

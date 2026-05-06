@@ -1,7 +1,7 @@
 import os
 import socket
 
-from server import BUFFER_SIZE, DEFAULT_SOCKET_PATH
+from config import BUFFER_SIZE, DEFAULT_SOCKET_PATH
 
 
 class FileClient:

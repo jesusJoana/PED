@@ -1,0 +1,2 @@
+DEFAULT_SOCKET_PATH = "/tmp/serv4.sock"
+BUFFER_SIZE = 4096
