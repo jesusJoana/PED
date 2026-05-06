@@ -47,6 +47,17 @@ refactor cuando aporte una mejora clara: simplificar codigo, eliminar duplicidad
 mejorar nombres, reducir riesgo o preparar una siguiente iteracion sin cambiar
 el comportamiento observable.
 
+## Flujo por entrega
+
+Cada iteracion se dividira en entregas separadas:
+
+- `Test n`: solo se preparan los tests nuevos y la bateria debe quedar en rojo.
+- `Test n OK`: se implementa el codigo minimo para hacer pasar los tests anteriores.
+- `Refactor n`: se realiza solo si aporta una mejora clara y siempre manteniendo
+  los tests en verde.
+
+No se avanzara automaticamente de `Test n` a `Test n OK` dentro de la misma entrega.
+
 ## Iteracion 1 - Comunicacion basica UDS
 
 ### Test 1
