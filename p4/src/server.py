@@ -28,11 +28,10 @@ class FileServer:
             server_socket.bind(self.socket_path)
             server_socket.listen(5)
 
-            # El servidor no termina tras atender un cliente.
-            while True:
-                connection, _ = server_socket.accept()
-                with connection:
-                    self.handle_connection(connection)
+            # En la iteracion 1 se atiende una sola conexion.
+            connection, _ = server_socket.accept()
+            with connection:
+                self.handle_connection(connection)
 
     def handle_connection(self, connection):
         file_path = self._receive_path(connection)
