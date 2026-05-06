@@ -17,6 +17,7 @@ def main():
     parser = build_parser()
     args = parser.parse_args()
 
+    # main.py es el punto de entrada unico exigido por el contrato.
     if args.mode == "server":
         FileServer(socket_path=args.socket).start()
         return 0
