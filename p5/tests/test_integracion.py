@@ -83,6 +83,58 @@ class IntegracionTest(unittest.TestCase):
         self.assertNotIn("--host", content)
         self.assertNotIn("--port", content)
 
+    # ============================================================
+    # Iteracion 7 - Test 7 Integracion
+    #
+    # Objetivo:
+    # Comprobar el flujo real cuando el fichero solicitado no existe.
+    #
+    # Requisitos:
+    # R3: Servidor responde con mensaje de error si no puede devolver
+    #     el fichero.
+    # R4: Cliente muestra la respuesta por terminal.
+    # ============================================================
+
+    def test_iteracion_7_cliente_imprime_error_de_fichero_inexistente(self):
+        """
+        Requisitos: R3, R4.
+        Comprueba que cliente y servidor reales colaboran mediante UDP
+        y que el cliente imprime el error recibido del servidor.
+        """
+        server_process = None
+        missing_path = os.path.join(
+            tempfile.gettempdir(),
+            "ped_p5_fichero_inexistente_integracion_7.txt",
+        )
+        if os.path.exists(missing_path):
+            os.unlink(missing_path)
+
+        try:
+            server_process = subprocess.Popen(
+                [sys.executable, MAIN_PATH, "server"],
+                cwd=PROJECT_ROOT,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+            time.sleep(0.3)
+
+            client_process = subprocess.run(
+                [sys.executable, MAIN_PATH, "client", missing_path],
+                cwd=PROJECT_ROOT,
+                capture_output=True,
+                text=True,
+                timeout=5,
+                check=False,
+            )
+
+            self.assertEqual(0, client_process.returncode, client_process.stderr)
+            self.assertTrue(client_process.stdout.startswith("ERROR:"))
+            self.assertIn(missing_path, client_process.stdout)
+        finally:
+            if server_process is not None and server_process.poll() is None:
+                server_process.terminate()
+                server_process.wait(timeout=5)
+
 
 if __name__ == "__main__":
     unittest.main()
