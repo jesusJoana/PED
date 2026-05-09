@@ -72,6 +72,37 @@ class ServidorTest(unittest.TestCase):
         finally:
             server_socket.close()
 
+    # ============================================================
+    # Iteracion 3 - Test 3 Unitario
+    #
+    # Objetivo:
+    # Definir la respuesta del servidor cuando no puede leer el fichero.
+    #
+    # Requisitos:
+    # R3: El servidor respondera con un mensaje de error si no puede
+    #     devolver el contenido del fichero.
+    # ============================================================
+
+    def test_iteracion_3_servidor_devuelve_error_para_fichero_inexistente(self):
+        """
+        Requisito: R3.
+        Comprueba que el servidor devuelve un mensaje textual de error
+        cuando el fichero solicitado no existe.
+        """
+        from server import FileServer
+
+        missing_path = os.path.join(
+            tempfile.gettempdir(),
+            "ped_p5_fichero_inexistente_test_3.txt",
+        )
+        if os.path.exists(missing_path):
+            os.unlink(missing_path)
+
+        response = FileServer().build_response(missing_path)
+
+        self.assertTrue(response.startswith("ERROR:"))
+        self.assertIn(missing_path, response)
+
 
 if __name__ == "__main__":
     unittest.main()
