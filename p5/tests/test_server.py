@@ -103,6 +103,36 @@ class ServidorTest(unittest.TestCase):
         self.assertTrue(response.startswith("ERROR:"))
         self.assertIn(missing_path, response)
 
+    # ============================================================
+    # Iteracion 4 - Test 4 Unitario
+    #
+    # Objetivo:
+    # Definir el procesamiento de una peticion individual del servidor.
+    #
+    # Requisitos:
+    # R3: El servidor responde con contenido o error.
+    # R6: Atender una peticion individual no implica finalizar el servidor.
+    # ============================================================
+
+    def test_iteracion_4_servidor_procesa_peticion_de_fichero_existente(self):
+        """
+        Requisitos: R3, R6.
+        Comprueba que el servidor procesa una ruta recibida como peticion
+        individual y devuelve la respuesta correspondiente.
+        """
+        from server import FileServer
+
+        with tempfile.NamedTemporaryFile("w", delete=False) as file:
+            file.write("respuesta desde process_request\n")
+            file_path = file.name
+
+        try:
+            response = FileServer().process_request(file_path)
+
+            self.assertEqual("respuesta desde process_request\n", response)
+        finally:
+            os.unlink(file_path)
+
 
 if __name__ == "__main__":
     unittest.main()
