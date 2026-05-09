@@ -13,5 +13,8 @@ class FileServer:
 
     def build_response(self, file_path):
         # El servidor responde con el contenido textual del fichero solicitado.
-        with open(file_path, "r", encoding="utf-8") as file:
-            return file.read()
+        try:
+            with open(file_path, "r", encoding="utf-8") as file:
+                return file.read()
+        except OSError as error:
+            return f"ERROR: no se pudo leer {file_path}: {error}\n"
