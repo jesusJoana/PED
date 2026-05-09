@@ -18,3 +18,6 @@ class FileServer:
                 return file.read()
         except OSError as error:
             return f"ERROR: no se pudo leer {file_path}: {error}\n"
+
+    def process_request(self, request):
+        return self.build_response(request)
