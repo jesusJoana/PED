@@ -3,8 +3,6 @@ VENV=venv
 PIP=$(VENV)/bin/pip
 PY=$(VENV)/bin/python
 FILE?=$(CURDIR)/fichero.txt
-HOST?=127.0.0.1
-PORT?=5005
 
 .PHONY: install test run server client clean freeze
 
@@ -17,13 +15,13 @@ test:
 	$(PY) -m unittest discover -s tests -v
 
 run:
-	./cli5 $(FILE) --host $(HOST) --port $(PORT)
+	$(PY) src/main.py client $(FILE)
 
 server:
-	./serv5 --host $(HOST) --port $(PORT)
+	$(PY) src/main.py server
 
 client:
-	./cli5 $(FILE) --host $(HOST) --port $(PORT)
+	$(PY) src/main.py client $(FILE)
 
 clean:
 	find . -type d -name "__pycache__" -exec rm -rf {} +
