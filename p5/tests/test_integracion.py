@@ -135,6 +135,99 @@ class IntegracionTest(unittest.TestCase):
                 server_process.terminate()
                 server_process.wait(timeout=5)
 
+    # ============================================================
+    # Iteracion 8 - Test 8 Integracion
+    #
+    # Objetivo:
+    # Comprobar que el servidor atiende mas de un cliente y permanece vivo.
+    #
+    # Requisitos:
+    # R5: El servidor permite mas de un cliente simultaneamente.
+    # R6: El servidor no se cierra al terminar una peticion.
+    # ============================================================
+
+    def test_iteracion_8_servidor_atiende_varios_clientes_reales(self):
+        """
+        Requisitos: R5, R6.
+        Comprueba que varios clientes reales reciben respuesta del mismo
+        servidor UDP.
+        """
+        server_process = None
+
+        with tempfile.NamedTemporaryFile("w", delete=False) as first_file:
+            first_file.write("respuesta primer cliente\n")
+            first_file_path = first_file.name
+
+        with tempfile.NamedTemporaryFile("w", delete=False) as second_file:
+            second_file.write("respuesta segundo cliente\n")
+            second_file_path = second_file.name
+
+        try:
+            server_process = subprocess.Popen(
+                [sys.executable, MAIN_PATH, "server"],
+                cwd=PROJECT_ROOT,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+            time.sleep(0.3)
+
+            first_client = self._run_client(first_file_path)
+            second_client = self._run_client(second_file_path)
+
+            self.assertEqual(0, first_client.returncode, first_client.stderr)
+            self.assertEqual("respuesta primer cliente\n", first_client.stdout)
+            self.assertEqual(0, second_client.returncode, second_client.stderr)
+            self.assertEqual("respuesta segundo cliente\n", second_client.stdout)
+        finally:
+            if server_process is not None and server_process.poll() is None:
+                server_process.terminate()
+                server_process.wait(timeout=5)
+            os.unlink(first_file_path)
+            os.unlink(second_file_path)
+
+    def test_iteracion_8_servidor_sigue_vivo_tras_responder(self):
+        """
+        Requisito: R6.
+        Comprueba que el proceso servidor no termina automaticamente tras
+        responder a una peticion.
+        """
+        server_process = None
+
+        with tempfile.NamedTemporaryFile("w", delete=False) as file:
+            file.write("respuesta para mantener servidor vivo\n")
+            file_path = file.name
+
+        try:
+            server_process = subprocess.Popen(
+                [sys.executable, MAIN_PATH, "server"],
+                cwd=PROJECT_ROOT,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+            time.sleep(0.3)
+
+            client_process = self._run_client(file_path)
+
+            self.assertEqual(0, client_process.returncode, client_process.stderr)
+            self.assertEqual("respuesta para mantener servidor vivo\n", client_process.stdout)
+            time.sleep(0.2)
+            self.assertIsNone(server_process.poll())
+        finally:
+            if server_process is not None and server_process.poll() is None:
+                server_process.terminate()
+                server_process.wait(timeout=5)
+            os.unlink(file_path)
+
+    def _run_client(self, file_path):
+        return subprocess.run(
+            [sys.executable, MAIN_PATH, "client", file_path],
+            cwd=PROJECT_ROOT,
+            capture_output=True,
+            text=True,
+            timeout=5,
+            check=False,
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
