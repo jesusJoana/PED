@@ -228,6 +228,100 @@ class IntegracionTest(unittest.TestCase):
             check=False,
         )
 
+    # ============================================================
+    # Iteracion 9 - Test 9 Integracion
+    #
+    # Objetivo:
+    # Comprobar con ps los nombres de proceso pedidos por el enunciado.
+    #
+    # Requisitos:
+    # R1: Los procesos cliente y servidor deben contener cli5 y serv5.
+    # ============================================================
+
+    def test_iteracion_9_proceso_servidor_aparece_como_serv5_en_ps(self):
+        """
+        Requisito: R1.
+        Comprueba que el proceso servidor aparece como serv5 en ps.
+        """
+        server_process = None
+
+        try:
+            server_process = subprocess.Popen(
+                [sys.executable, MAIN_PATH, "server"],
+                cwd=PROJECT_ROOT,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+
+            server_args = self._wait_for_process_args(server_process.pid, "serv5")
+
+            self.assertIn("serv5", server_args)
+        finally:
+            if server_process is not None and server_process.poll() is None:
+                server_process.terminate()
+                server_process.wait(timeout=5)
+
+    def test_iteracion_9_proceso_cliente_aparece_como_cli5_en_ps(self):
+        """
+        Requisito: R1.
+        Comprueba que el proceso cliente aparece como cli5 en ps.
+        """
+        server_process = None
+        client_process = None
+        fifo_path = os.path.join(tempfile.gettempdir(), "ped_p5_fifo_cliente_test_9")
+
+        if os.path.exists(fifo_path):
+            os.unlink(fifo_path)
+        os.mkfifo(fifo_path)
+
+        try:
+            server_process = subprocess.Popen(
+                [sys.executable, MAIN_PATH, "server"],
+                cwd=PROJECT_ROOT,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+            time.sleep(0.3)
+
+            client_process = subprocess.Popen(
+                [sys.executable, MAIN_PATH, "client", fifo_path],
+                cwd=PROJECT_ROOT,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+
+            client_args = self._wait_for_process_args(client_process.pid, "cli5")
+
+            self.assertIn("cli5", client_args)
+        finally:
+            if client_process is not None and client_process.poll() is None:
+                client_process.terminate()
+                client_process.wait(timeout=5)
+            if server_process is not None and server_process.poll() is None:
+                server_process.terminate()
+                server_process.wait(timeout=5)
+            if os.path.exists(fifo_path):
+                os.unlink(fifo_path)
+
+    def _ps_args(self, pid):
+        result = subprocess.run(
+            ["ps", "-p", str(pid), "-o", "args="],
+            capture_output=True,
+            text=True,
+            timeout=5,
+            check=False,
+        )
+        return result.stdout.strip()
+
+    def _wait_for_process_args(self, pid, expected_text):
+        deadline = time.time() + 5
+        while time.time() < deadline:
+            args = self._ps_args(pid)
+            if expected_text in args:
+                return args
+            time.sleep(0.05)
+        self.fail(f"No aparece {expected_text} en ps para el proceso {pid}")
+
 
 if __name__ == "__main__":
     unittest.main()
