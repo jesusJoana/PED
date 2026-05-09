@@ -1,6 +1,6 @@
 import socket
 
-from config import DEFAULT_HOST, DEFAULT_PORT
+from config import BUFFER_SIZE, DEFAULT_HOST, DEFAULT_PORT
 
 
 class FileServer:
@@ -10,6 +10,14 @@ class FileServer:
 
     def create_socket(self):
         return socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+    def start(self):
+        with self.create_socket() as server_socket:
+            server_socket.bind((self.host, self.port))
+            data, client_address = server_socket.recvfrom(BUFFER_SIZE)
+            request = data.decode("utf-8")
+            response = self.process_request(request)
+            server_socket.sendto(response.encode("utf-8"), client_address)
 
     def build_response(self, file_path):
         # El servidor responde con el contenido textual del fichero solicitado.
