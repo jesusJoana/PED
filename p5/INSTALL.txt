@@ -1,0 +1,69 @@
+Instalacion - Practica 5
+========================
+
+Requisitos
+----------
+
+- Linux.
+- Python 3.
+- make.
+- Acceso a la creacion de sockets UDP locales en 127.0.0.1:16063.
+
+Preparacion del entorno
+-----------------------
+
+Desde la carpeta p5, ejecutar:
+
+make install
+
+Este comando crea el entorno virtual venv e instala las dependencias indicadas
+en requirements.txt.
+
+Dependencias
+------------
+
+La practica usa:
+
+- setproctitle: permite cambiar el nombre visible del proceso para que ps
+  muestre cli5 y serv5.
+
+Ejecucion de pruebas
+--------------------
+
+Desde la carpeta p5:
+
+make test
+
+Ejecucion del servidor
+----------------------
+
+Desde la carpeta p5:
+
+make server
+
+El servidor UDP se inicia en 127.0.0.1:16063 y permanece activo hasta que el
+usuario lo cierre manualmente.
+
+Ejecucion del cliente
+---------------------
+
+Para solicitar el fichero de ejemplo:
+
+make client
+
+Para solicitar otro fichero:
+
+make client FILE=/ruta/absoluta/al/fichero.txt
+
+Limpieza
+--------
+
+Para eliminar caches de Python:
+
+make clean
+
+Notas
+-----
+
+Si el puerto 16063 ya esta ocupado, cierre el proceso que lo este usando antes
+de arrancar el servidor de esta practica.

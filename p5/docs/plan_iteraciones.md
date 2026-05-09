@@ -415,37 +415,25 @@ Estado esperado: GREEN.
 
 ### Iteracion 10 - Documentacion final
 
-#### Entrega Test 10 Integración - RED
+#### Entrega Documentacion 10 - GREEN
 
-Objetivo: definir la documentacion obligatoria de cierre.
+Objetivo: generar la documentacion obligatoria de cierre.
 
-Archivo: `tests/test_integracion.py`
-
-Pruebas:
-
-- Existe `README.txt` y documenta uso basico.
-  - Requisitos: contrato de trabajo.
-  - Comportamiento: describe proyecto, ejecucion, ejemplo y limitacion UDP.
-- Existe `INSTALL.txt` y documenta instalacion.
-  - Requisitos: contrato de trabajo.
-  - Comportamiento: describe entorno, dependencias, `make install`,
-    `make test`, `make server` y `make client`.
-
-Estado esperado: RED.
-
-#### Entrega Test 10 Integración OK - GREEN
-
-Objetivo: generar la documentacion final.
+Esta iteracion no requiere pruebas nuevas. La validacion consistira en revisar
+que la documentacion existe, es clara y describe la instalacion y el uso real
+del sistema.
 
 Archivos previstos:
 
 - `README.txt`
 - `INSTALL.txt`
+- `fichero.txt`
 
-Implementacion prevista:
+Contenido previsto:
 
 - Manual de usuario y descripcion funcional en `README.txt`.
 - Instrucciones de instalacion y ejecucion en `INSTALL.txt`.
+- Fichero de ejemplo para probar `make client`.
 
 Estado esperado: GREEN.
 
