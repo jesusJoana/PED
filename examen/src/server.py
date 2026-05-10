@@ -2,6 +2,14 @@ import socket
 
 
 class Server:
+    COMMAND_SEARCH = "BUSCAR"
+    COMMAND_NUMBER = "NUMERO"
+    COMMAND_EXIT = "SALIR"
+
+    RESPONSE_ERROR = "ERROR"
+    RESPONSE_OK = "OK"
+    RESPONSE_RESULT = "RESULTADO"
+
     def __init__(
         self,
         host="127.0.0.1",
@@ -19,17 +27,17 @@ class Server:
     def process_message(self, message):
         parts = message.split()
 
-        if len(parts) == 2 and parts[0] == "BUSCAR":
+        if len(parts) == 2 and parts[0] == self.COMMAND_SEARCH:
             return self._handle_search(parts[1])
 
-        if len(parts) == 1 and parts[0] == "NUMERO":
-            return f"OK {self.search_count}"
+        if len(parts) == 1 and parts[0] == self.COMMAND_NUMBER:
+            return f"{self.RESPONSE_OK} {self.search_count}"
 
-        if len(parts) == 1 and parts[0] == "SALIR":
+        if len(parts) == 1 and parts[0] == self.COMMAND_EXIT:
             self.should_stop = True
-            return "OK"
+            return self.RESPONSE_OK
 
-        return "ERROR"
+        return self.RESPONSE_ERROR
 
     def run(self):
         with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as udp_socket:
@@ -44,11 +52,13 @@ class Server:
     def _handle_search(self, search_text):
         self.search_count += 1
         lines = self._find_lines(search_text)
+        return self._build_search_response(lines)
 
+    def _build_search_response(self, lines):
         if not lines:
-            return "RESULTADO 0"
+            return f"{self.RESPONSE_RESULT} 0"
 
-        return f"RESULTADO {len(lines)}\n" + "".join(lines)
+        return f"{self.RESPONSE_RESULT} {len(lines)}\n" + "".join(lines)
 
     def _find_lines(self, search_text):
         found_lines = []
