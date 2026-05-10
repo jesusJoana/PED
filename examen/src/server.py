@@ -1,4 +1,5 @@
 import socket
+import sys
 
 
 class Server:
@@ -39,6 +40,14 @@ class Server:
 
         return self.RESPONSE_ERROR
 
+    def process_datagram(self, message, address):
+        self.log_request(address, message)
+        return self.process_message(message)
+
+    def log_request(self, address, message):
+        client_ip = address[0]
+        print(f"{client_ip} {message}", file=sys.stderr)
+
     def run(self):
         with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as udp_socket:
             udp_socket.bind((self.host, self.port))
@@ -46,7 +55,7 @@ class Server:
             while not self.should_stop:
                 data, address = udp_socket.recvfrom(65535)
                 message = data.decode("utf-8")
-                response = self.process_message(message)
+                response = self.process_datagram(message, address)
                 udp_socket.sendto(response.encode("utf-8"), address)
 
     def _handle_search(self, search_text):
