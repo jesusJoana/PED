@@ -1,0 +1,75 @@
+Practica 4 - Instalacion
+
+Dependencias
+------------
+
+- Sistema Linux.
+- Python 3.
+- make.
+- No se necesitan dependencias externas de Python.
+
+Preparacion del entorno
+-----------------------
+
+Entrar en la carpeta de la practica:
+
+   cd p4
+
+Crear el entorno virtual venv:
+
+   make install
+
+El comando anterior crea la carpeta venv y actualiza pip. Si existiera un
+requirements.txt, tambien instalaria sus dependencias.
+
+Ejecucion de pruebas
+--------------------
+
+Ejecutar todas las pruebas automatizadas con unittest:
+
+   make test
+
+Ejecucion de la aplicacion
+--------------------------
+
+Arrancar el servidor:
+
+   make server
+
+Ejecutar el cliente indicando un path absoluto:
+
+   make client FILE=/ruta/absoluta/del/fichero
+
+Tambien puede ejecutarse sin FILE para usar el fichero de ejemplo incluido:
+
+   make client
+
+Ejemplo completo:
+
+   make server
+   make client
+
+Uso de socket personalizado
+---------------------------
+
+Por defecto se usa:
+
+   /tmp/serv4.sock
+
+Puede indicarse otra ruta dentro de /tmp:
+
+   make server SOCKET=/tmp/socket_p4.sock
+   make client SOCKET=/tmp/socket_p4.sock
+
+Limpieza
+--------
+
+Eliminar caches de Python:
+
+   make clean
+
+Notas
+-----
+
+Los procesos se lanzan mediante los ejecutables serv4 y cli4 para que sus
+nombres puedan comprobarse con ps.
