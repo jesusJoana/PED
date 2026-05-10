@@ -3,6 +3,8 @@ import sys
 
 
 class Server:
+    BUFFER_SIZE = 65535
+
     COMMAND_SEARCH = "BUSCAR"
     COMMAND_NUMBER = "NUMERO"
     COMMAND_EXIT = "SALIR"
@@ -53,7 +55,7 @@ class Server:
             udp_socket.bind((self.host, self.port))
 
             while not self.should_stop:
-                data, address = udp_socket.recvfrom(65535)
+                data, address = udp_socket.recvfrom(self.BUFFER_SIZE)
                 message = data.decode("utf-8")
                 response = self.process_datagram(message, address)
                 udp_socket.sendto(response.encode("utf-8"), address)

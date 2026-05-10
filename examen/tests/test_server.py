@@ -120,8 +120,10 @@ class TestServerTraceIteration3(unittest.TestCase):
     def test_la_traza_no_altera_la_respuesta_del_protocolo(self):
         """Iteracion 3 - Requisito servidor modificado: la traza no cambia la respuesta UDP."""
         server = Server()
+        stderr = StringIO()
 
-        response = server.process_datagram("NUMERO", ("10.0.0.5", 50000))
+        with redirect_stderr(stderr):
+            response = server.process_datagram("NUMERO", ("10.0.0.5", 50000))
 
         self.assertEqual(response, "OK 0")
 
