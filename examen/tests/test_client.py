@@ -3,7 +3,7 @@ import os
 import sys
 import unittest
 from contextlib import redirect_stdout
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src")))
@@ -84,6 +84,62 @@ class TestClientIteration2(unittest.TestCase):
 
         with redirect_stdout(output):
             client.run()
+
+        self.assertIn("ERROR", output.getvalue())
+        self.assertTrue(fake_socket.closed)
+
+
+class TestClientIteration4(unittest.TestCase):
+    """Iteracion 4 - Test 4: pruebas unitarias del cliente modificado."""
+
+    def test_cliente_solicita_direccion_completa_al_usuario(self):
+        """Iteracion 4 - Requisito cliente modificado: pregunta host y puerto al usuario."""
+        client = Client(socket_factory=Mock(return_value=FakeSocket()))
+
+        with patch("builtins.input", return_value="127.0.0.1:16063") as input_mock:
+            client.ask_server_address()
+
+        input_mock.assert_called_once()
+
+    def test_parsea_direccion_host_puerto(self):
+        """Iteracion 4 - Requisito cliente modificado: interpreta direcciones host:puerto."""
+        client = Client()
+
+        host, port = client.parse_server_address("192.168.1.10:17000")
+
+        self.assertEqual(host, "192.168.1.10")
+        self.assertEqual(port, 17000)
+
+    def test_muestra_error_si_formato_de_direccion_es_incorrecto(self):
+        """Iteracion 4 - Requisito cliente modificado: informa de formato incorrecto."""
+        client = Client()
+        output = io.StringIO()
+
+        with redirect_stdout(output):
+            result = client.configure_server_address("direccion_invalida")
+
+        self.assertFalse(result)
+        self.assertIn("ERROR", output.getvalue())
+
+    def test_actualiza_direccion_si_formato_es_correcto(self):
+        """Iteracion 4 - Requisito cliente modificado: configura host y puerto validos."""
+        client = Client()
+
+        result = client.configure_server_address("localhost:17000")
+
+        self.assertTrue(result)
+        self.assertEqual(client.host, "localhost")
+        self.assertEqual(client.port, 17000)
+
+    def test_cliente_interactivo_imprime_error_si_no_consigue_comunicarse(self):
+        """Iteracion 4 - Requisito cliente modificado: informa si falla la comunicacion."""
+        fake_socket = FakeSocket(error_on_send=True)
+        client = Client(socket_factory=Mock(return_value=fake_socket))
+        output = io.StringIO()
+
+        with patch("builtins.input", return_value="127.0.0.1:16063"):
+            with redirect_stdout(output):
+                client.run_interactive()
 
         self.assertIn("ERROR", output.getvalue())
         self.assertTrue(fake_socket.closed)
