@@ -2,6 +2,8 @@ import os
 import sys
 import tempfile
 import unittest
+from contextlib import redirect_stderr
+from io import StringIO
 
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src")))
@@ -98,6 +100,30 @@ class TestServerProtocolIteration1(unittest.TestCase):
         for message in invalid_messages:
             with self.subTest(message=message):
                 self.assertEqual(self.server.process_message(message), "ERROR")
+
+
+class TestServerTraceIteration3(unittest.TestCase):
+    """Iteracion 3 - Test 3: pruebas unitarias de trazas del servidor en stderr."""
+
+    def test_registra_en_stderr_ip_y_mensaje_recibido(self):
+        """Iteracion 3 - Requisito servidor modificado: imprime IP y mensaje en stderr."""
+        server = Server()
+        stderr = StringIO()
+
+        with redirect_stderr(stderr):
+            server.log_request(("192.168.1.20", 34567), "BUSCAR root")
+
+        output = stderr.getvalue()
+        self.assertIn("192.168.1.20", output)
+        self.assertIn("BUSCAR root", output)
+
+    def test_la_traza_no_altera_la_respuesta_del_protocolo(self):
+        """Iteracion 3 - Requisito servidor modificado: la traza no cambia la respuesta UDP."""
+        server = Server()
+
+        response = server.process_datagram("NUMERO", ("10.0.0.5", 50000))
+
+        self.assertEqual(response, "OK 0")
 
 
 if __name__ == "__main__":
