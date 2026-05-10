@@ -5,6 +5,8 @@ class Client:
     BUFFER_SIZE = 65535
     DEFAULT_MESSAGES = ("BUSCAR root", "NUMERO", "SALIR")
     ERROR_PREFIX = "ERROR"
+    MIN_PORT = 1
+    MAX_PORT = 65535
     SERVER_ADDRESS_PROMPT = "Direccion del servidor (host:puerto): "
 
     def __init__(
@@ -51,7 +53,7 @@ class Client:
             return False
 
     def parse_server_address(self, address_text):
-        host, separator, port_text = address_text.rpartition(":")
+        host, separator, port_text = address_text.strip().rpartition(":")
 
         if not separator or not host or not port_text:
             raise ValueError("formato de direccion invalido")
@@ -61,7 +63,7 @@ class Client:
         except ValueError as error:
             raise ValueError("puerto invalido") from error
 
-        if port < 1 or port > 65535:
+        if port < self.MIN_PORT or port > self.MAX_PORT:
             raise ValueError("puerto fuera de rango")
 
         return host, port

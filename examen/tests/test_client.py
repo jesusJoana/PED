@@ -110,6 +110,15 @@ class TestClientIteration4(unittest.TestCase):
         self.assertEqual(host, "192.168.1.10")
         self.assertEqual(port, 17000)
 
+    def test_parsea_direccion_con_espacios_exteriores(self):
+        """Iteracion 4 - Refactor 4: ignora espacios alrededor de la direccion completa."""
+        client = Client()
+
+        host, port = client.parse_server_address("  localhost:17000  ")
+
+        self.assertEqual(host, "localhost")
+        self.assertEqual(port, 17000)
+
     def test_muestra_error_si_formato_de_direccion_es_incorrecto(self):
         """Iteracion 4 - Requisito cliente modificado: informa de formato incorrecto."""
         client = Client()
