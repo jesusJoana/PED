@@ -1,0 +1,74 @@
+INSTALL - Instrucciones de instalacion y ejecucion
+==================================================
+
+Sistema operativo
+-----------------
+
+El proyecto esta preparado para ejecutarse en una maquina Linux.
+
+Herramientas necesarias
+-----------------------
+
+- Python 3
+- venv
+- make
+- unittest, incluido en la biblioteca estandar de Python
+
+No se necesitan dependencias externas adicionales.
+
+Preparacion del entorno
+-----------------------
+
+Desde la carpeta examen, ejecutar:
+
+make install
+
+Este comando crea el entorno virtual en:
+
+venv/
+
+Ejecucion del servidor
+----------------------
+
+Desde la carpeta examen:
+
+make run-server
+
+El servidor queda escuchando por UDP en:
+
+127.0.0.1:16063
+
+Ejecucion del cliente
+---------------------
+
+En otra terminal, desde la carpeta examen:
+
+make run-client
+
+Cuando el cliente pregunte por la direccion del servidor, escribir:
+
+127.0.0.1:16063
+
+Ejecucion de pruebas
+--------------------
+
+Desde la carpeta examen:
+
+make test
+
+Limpieza de ficheros temporales
+-------------------------------
+
+Para borrar cache de Python:
+
+make clean
+
+Ficheros principales
+--------------------
+
+- src/main.py: punto de entrada de servidor y cliente.
+- src/server.py: implementacion del servidor UDP.
+- src/client.py: implementacion del cliente UDP.
+- tests/test_server.py: pruebas unitarias del servidor.
+- tests/test_client.py: pruebas unitarias del cliente.
+- Makefile: comandos de instalacion, ejecucion y pruebas.

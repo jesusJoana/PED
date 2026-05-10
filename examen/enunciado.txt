@@ -1,0 +1,198 @@
+ENUNCIADO DEL EJERCICIO
+=======================
+
+Se debe implementar una aplicacion cliente-servidor utilizando comunicacion UDP.
+
+El sistema estara formado por:
+
+- un servidor UDP;
+- un cliente UDP.
+
+Todos los mensajes se enviaran codificados en UTF-8.
+
+
+SERVIDOR
+--------
+
+El servidor debera escuchar peticiones UDP en el puerto definido para la
+practica.
+
+El servidor se ejecutara de forma continua, aceptando mensajes procedentes de
+cualquier cliente. Para cada mensaje recibido, generara una respuesta UDP y se
+la enviara al cliente que realizo la peticion.
+
+El servidor solo terminara su ejecucion cuando reciba el mensaje SALIR.
+
+Ademas, el servidor debera escribir por la salida de error standard una linea
+cada vez que reciba un mensaje de un cliente. Dicha linea debera incluir:
+
+- la direccion IP del cliente;
+- el mensaje recibido.
+
+
+CLIENTE
+-------
+
+El cliente debera conectarse al servidor mediante UDP.
+
+En una primera version, el cliente utilizara automaticamente la direccion del
+servidor definida en los requisitos de la practica.
+
+El cliente debera enviar un minimo de tres mensajes al servidor, imprimir por
+salida standard las respuestas recibidas y terminar tras recibir e imprimir la
+ultima respuesta.
+
+En una version posterior, el cliente debera preguntar al usuario la direccion
+completa del servidor. Si no consigue comunicarse con el servidor, debera
+mostrar un mensaje de error.
+
+
+PROTOCOLO DE MENSAJES
+---------------------
+
+El protocolo esta formado por mensajes de texto enviados desde el cliente al
+servidor.
+
+Los mensajes validos son los siguientes:
+
+
+1. BUSCAR <cadena>
+
+El servidor debera buscar la cadena indicada como subcadena en los ficheros:
+
+- /etc/passwd
+- /etc/services
+
+La busqueda debera comportarse como grep:
+
+- se buscaran lineas completas que contengan la cadena;
+- se distinguiran letras mayusculas y minusculas;
+- la cadena de busqueda sera una unica palabra sin espacios.
+
+La respuesta del servidor tendra el siguiente formato si existen coincidencias:
+
+RESULTADO <numero_de_lineas>
+<linea_encontrada_1>
+<linea_encontrada_2>
+...
+
+Por ejemplo, si el cliente envia:
+
+BUSCAR xmlrpc
+
+una posible respuesta seria:
+
+RESULTADO 2
+xmlrpc-beep 602/tcp # XML-RPC over BEEP
+xmlrpc-beep 602/udp # XML-RPC over BEEP
+
+Si no se encuentra ninguna linea, la respuesta sera:
+
+RESULTADO 0
+
+
+2. NUMERO
+
+El servidor debera devolver el numero de busquedas ejecutadas desde que arranco.
+
+La respuesta tendra el formato:
+
+OK <numero_de_busquedas>
+
+Por ejemplo:
+
+OK 2
+
+
+3. SALIR
+
+Indica al servidor que debe terminar su ejecucion.
+
+La respuesta sera:
+
+OK
+
+
+MENSAJES INVALIDOS
+------------------
+
+Cualquier otro mensaje, asi como cualquier mensaje valido mal escrito o con un
+formato incorrecto, debera generar la respuesta:
+
+ERROR
+
+Ejemplos de mensajes invalidos:
+
+BUSCAR
+BUSCAR a ver que encuentro
+NUMERO algo
+SALIR algo
+HOLA
+
+
+EJEMPLOS DE RESPUESTAS VALIDAS
+------------------------------
+
+OK
+OK 2
+ERROR
+RESULTADO 0
+RESULTADO 1
+root:x:0:0:root:/root:/bin/bash
+
+
+ITERACIONES DE DESARROLLO
+-------------------------
+
+Iteracion 1: Servidor
+
+Implementar el servidor. Este debera ejecutarse de forma continua, recibir los
+mensajes indicados y generar las respuestas adecuadas.
+
+La entrega correspondiente debera etiquetarse como:
+
+Servidor
+
+
+Iteracion 2: Cliente
+
+Implementar el cliente. Este debera conectarse automaticamente a la direccion
+del servidor especificada, enviar un minimo de tres mensajes, imprimir las
+respuestas recibidas por salida standard y terminar tras el ultimo mensaje.
+
+La entrega correspondiente debera etiquetarse como:
+
+cliente
+
+
+Iteracion 3: Servidor modificado
+
+Modificar el servidor para que imprima por error standard una linea cada vez que
+reciba un mensaje de un cliente. La linea debera incluir la direccion IP del
+cliente y el mensaje recibido.
+
+La entrega correspondiente debera etiquetarse como:
+
+servidor modificado
+
+
+Iteracion 4: Cliente modificado
+
+Modificar el cliente para que pregunte al usuario la direccion completa del
+servidor. Si no consigue comunicarse con el servidor, debera imprimir un error.
+
+La entrega correspondiente debera etiquetarse como:
+
+cliente modificado
+
+
+Iteracion 5: Documentacion
+
+Anotar en el fichero README el puerto de escucha elegido para el servidor, asi
+como el procedimiento y las herramientas necesarias para ejecutar el codigo:
+
+- sistema operativo;
+- herramientas de programacion;
+- herramientas de construccion;
+- scripts o comandos de ejecucion;
+- instrucciones basicas de uso.

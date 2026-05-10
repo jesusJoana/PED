@@ -3,6 +3,8 @@ import sys
 
 
 class Server:
+    """Servidor UDP que aplica el protocolo del enunciado."""
+
     BUFFER_SIZE = 65535
 
     COMMAND_SEARCH = "BUSCAR"
@@ -28,6 +30,7 @@ class Server:
         self.should_stop = False
 
     def process_message(self, message):
+        """Interpreta un mensaje de texto y devuelve la respuesta del protocolo."""
         parts = message.split()
 
         if len(parts) == 2 and parts[0] == self.COMMAND_SEARCH:
@@ -43,14 +46,17 @@ class Server:
         return self.RESPONSE_ERROR
 
     def process_datagram(self, message, address):
+        """Registra la peticion recibida por UDP y genera su respuesta."""
         self.log_request(address, message)
         return self.process_message(message)
 
     def log_request(self, address, message):
+        """Escribe en stderr la IP del cliente y el mensaje recibido."""
         client_ip = address[0]
         print(f"{client_ip} {message}", file=sys.stderr)
 
     def run(self):
+        """Arranca el bucle UDP hasta recibir el comando SALIR."""
         with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as udp_socket:
             udp_socket.bind((self.host, self.port))
 
@@ -61,17 +67,20 @@ class Server:
                 udp_socket.sendto(response.encode("utf-8"), address)
 
     def _handle_search(self, search_text):
+        """Ejecuta una busqueda y actualiza el contador de BUSCAR."""
         self.search_count += 1
         lines = self._find_lines(search_text)
         return self._build_search_response(lines)
 
     def _build_search_response(self, lines):
+        """Construye la respuesta RESULTADO con el numero de lineas encontradas."""
         if not lines:
             return f"{self.RESPONSE_RESULT} 0"
 
         return f"{self.RESPONSE_RESULT} {len(lines)}\n" + "".join(lines)
 
     def _find_lines(self, search_text):
+        """Busca la subcadena en /etc/passwd y /etc/services, respetando mayusculas."""
         found_lines = []
 
         for file_path in (self.passwd_path, self.services_path):

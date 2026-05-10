@@ -2,9 +2,8 @@ PYTHON=python3
 VENV=venv
 PIP=$(VENV)/bin/pip
 PY=$(VENV)/bin/python
-FILE?=prueba.txt
 
-.PHONY: install test run clean freeze
+.PHONY: install test run run-server run-client clean freeze
 
 install:
 	$(PYTHON) -m venv $(VENV)
@@ -14,8 +13,13 @@ install:
 test:
 	$(PY) -m unittest discover -s tests -v
 
-run:
-	$(PY) src/main.py $(FILE)
+run: run-server
+
+run-server:
+	$(PY) src/main.py server
+
+run-client:
+	$(PY) src/main.py client
 
 clean:
 	find . -type d -name "__pycache__" -exec rm -rf {} +
