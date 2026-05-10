@@ -1,7 +1,17 @@
+import sys
+
+from client import Client
 from server import Server
 
 
 def main():
+    mode = sys.argv[1] if len(sys.argv) > 1 else "server"
+
+    if mode == "client":
+        client = Client()
+        client.run()
+        return
+
     server = Server()
     server.run()
 
