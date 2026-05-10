@@ -27,15 +27,18 @@ El objetivo principal será maximizar:
 
 Antes de implementar, modificar o eliminar código, el asistente **deberá**:
 
-1. Analizar el requerimiento solicitado.
+1. Analizar los requerimientos de la practica o proyecto completo.
 2. Proponer una solución técnica de alto nivel.
 3. Definir:
+   - Iteraciones más adecuadas para implementar el proyecto
    - objetivo de la iteración,
-   - pruebas que se introducirán,
+   - pruebas que se introducirán en cada iteración,
    - archivos afectados,
    - estrategia de implementación,
    - y posibles dependencias o riesgos.
 4. Solicitar confirmación explícita del usuario antes de generar código.
+5. El asistente tiene permiso para crear tanto el contenido de los archivos como de la estructura de archivos para el proyecto (como mínimo habrá una carpeta para código fuente "src" y otra parea tests "tests").
+6. Los tests estarán documentados de tal forma que aparte de indicar qué requisitos prueban, indicarán también la iteración que están probando.
 
 No se realizarán cambios arquitectónicos importantes sin aprobación previa del usuario.
 
@@ -48,7 +51,7 @@ No se realizarán cambios arquitectónicos importantes sin aprobación previa de
 - El entorno de desarrollo utilizará `venv` como sistema de entornos virtuales.
 - La herramienta de testing utilizada será exclusivamente `unittest`.
 - Las aplicaciones desarrolladas seguirán arquitectura cliente-servidor.
-- Las comunicaciones podrán utilizar:
+- Las comunicaciones podrán utilizar (lo indicaré al principio del chat):
   - pipes,
   - FIFOs,
   - Unix Domain Sockets,
@@ -58,6 +61,27 @@ No se realizarán cambios arquitectónicos importantes sin aprobación previa de
 La aplicación cliente-servidor deberá lanzarse siempre desde un fichero `main.py`.
 
 La ejecución tanto de la aplicación como de las pruebas automatizadas deberá realizarse mediante `make`.
+
+Cuando una práctica cliente-servidor utilice una dirección IP y un puerto fijos,
+estos valores deberán estar definidos en los constructores de las clases de
+cliente y servidor, no pasarse como argumentos de lanzamiento por terminal,
+salvo que el usuario indique explícitamente lo contrario.
+
+Por defecto, cuando el enunciado no especifique otros valores, se usará:
+
+- host: `127.0.0.1`
+- puerto: `16063`
+
+Cuando el enunciado exija que los procesos tengan un nombre concreto comprobable
+mediante `ps`, se preferirá cambiar el nombre del proceso desde Python usando
+`setproctitle`, salvo que el usuario indique explícitamente otro mecanismo.
+
+En ese caso:
+
+- no se crearán wrappers ejecutables solo para cambiar el nombre del proceso,
+- se añadirá `setproctitle` como dependencia del proyecto,
+- se documentará en `requirements.txt` e `INSTALL.txt`,
+- y `main.py` será responsable de asignar el nombre correspondiente al modo de ejecución.
 
 El entorno de ejecución y pruebas será exclusivamente una máquina virtual Linux proporcionada por el usuario.
 
@@ -115,9 +139,13 @@ RED -> GREEN -> REFACTOR
 
 Cada entrega `Test n` deberá:
 
-- introducir uno o varios casos de prueba nuevos,
+- introducir el conjunto completo de pruebas previsto para esa iteración,
 - representar funcionalidad aún **no implementada**,
 - y dejar las pruebas en estado fallando (**RED**).
+
+Una entrega `Test n` no debe limitarse artificialmente a una única prueba. Si la
+iteración necesita varias pruebas para describir con claridad el comportamiento
+esperado, se añadirán todas en la misma entrega `Test n`.
 
 Los casos de prueba deberán:
 
@@ -125,11 +153,67 @@ Los casos de prueba deberán:
 - ser funcionalmente distintos,
 - y aportar cobertura útil.
 
+Cuando una iteración afecte a varias responsabilidades claras, las pruebas se
+repartirán en sus archivos correspondientes en lugar de concentrarse
+innecesariamente en una única prueba de integración.
+
+Por ejemplo, en una práctica cliente-servidor:
+
+- las pruebas propias del cliente irán en `tests/test_client.py`,
+- las pruebas propias del servidor irán en `tests/test_server.py`,
+- y las pruebas extremo a extremo irán en `tests/test_integracion.py`.
+
+Cada archivo podrá contener una o varias pruebas de la misma iteración si son
+necesarias para describir correctamente el comportamiento esperado.
+
+### Organización obligatoria de pruebas por iteración
+
+En cada práctica se mantendrá una separación clara entre pruebas unitarias e
+integración:
+
+- Habrá pruebas unitarias para cada clase principal del sistema.
+- Cada clase principal tendrá sus pruebas en su propio script de pruebas.
+- En una práctica cliente-servidor, habrá como mínimo:
+  - pruebas unitarias del cliente en `tests/test_client.py`,
+  - pruebas unitarias del servidor en `tests/test_server.py`,
+  - pruebas de integración en `tests/test_integracion.py`.
+
+Las pruebas unitarias y las pruebas de integración no se mezclarán en una misma
+entrega salvo autorización explícita del usuario.
+
+El orden de trabajo será:
+
+1. Primero se desarrollará el ciclo TDD de pruebas unitarias.
+2. Cuando las pruebas unitarias previstas estén en verde, se desarrollará el
+   ciclo TDD de pruebas de integración.
+
+Para cada iteración de pruebas unitarias se prepararán entregas separadas:
+
+- una primera entrega `Test n Unitario` en rojo, con las pruebas unitarias que
+  correspondan a esa iteración;
+- una segunda entrega `Test n OK` en verde, con la implementación mínima para
+  hacer pasar todas las pruebas unitarias introducidas en `Test n Unitario`.
+
+Después, para cada iteración de integración se prepararán entregas separadas:
+
+- una primera entrega `Test n Integración` en rojo, con las pruebas de
+  integración que correspondan a esa iteración;
+- una segunda entrega `Test n Integración OK` en verde, con la implementación
+  mínima para hacer pasar dichas pruebas de integración y mantener en verde
+  todas las pruebas unitarias acumuladas.
+
+Las pruebas se irán organizando por iteraciones dentro de cada archivo de test,
+con separadores o comentarios claros. Cada prueba deberá documentar:
+
+- la iteración a la que pertenece,
+- el requisito o requisitos del enunciado que valida,
+- y el comportamiento concreto que comprueba.
+
 ### 2. Entregas "Test n OK"
 
 Cada entrega `Test n OK` deberá:
 
-- implementar el mínimo código necesario para hacer pasar las pruebas introducidas en la entrega anterior,
+- implementar el mínimo código necesario para hacer pasar todo el conjunto de pruebas introducido en la entrega anterior,
 - mantener en verde todos los tests acumulados.
 
 El objetivo será alcanzar rápidamente un estado funcional y verificable.
