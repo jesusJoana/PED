@@ -9,7 +9,7 @@ def main():
 
     if mode == "client":
         client = Client()
-        client.run()
+        client.run_interactive()
         return
 
     server = Server()

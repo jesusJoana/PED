@@ -5,6 +5,7 @@ class Client:
     BUFFER_SIZE = 65535
     DEFAULT_MESSAGES = ("BUSCAR root", "NUMERO", "SALIR")
     ERROR_PREFIX = "ERROR"
+    SERVER_ADDRESS_PROMPT = "Direccion del servidor (host:puerto): "
 
     def __init__(
         self,
@@ -29,6 +30,41 @@ class Client:
             print(f"{self.ERROR_PREFIX} {error}")
         finally:
             udp_socket.close()
+
+    def run_interactive(self):
+        address_text = self.ask_server_address()
+
+        if not self.configure_server_address(address_text):
+            return
+
+        self.run()
+
+    def ask_server_address(self):
+        return input(self.SERVER_ADDRESS_PROMPT)
+
+    def configure_server_address(self, address_text):
+        try:
+            self.host, self.port = self.parse_server_address(address_text)
+            return True
+        except ValueError as error:
+            print(f"{self.ERROR_PREFIX} {error}")
+            return False
+
+    def parse_server_address(self, address_text):
+        host, separator, port_text = address_text.rpartition(":")
+
+        if not separator or not host or not port_text:
+            raise ValueError("formato de direccion invalido")
+
+        try:
+            port = int(port_text)
+        except ValueError as error:
+            raise ValueError("puerto invalido") from error
+
+        if port < 1 or port > 65535:
+            raise ValueError("puerto fuera de rango")
+
+        return host, port
 
     def _send_message(self, udp_socket, message):
         udp_socket.sendto(message.encode("utf-8"), self._server_address())
