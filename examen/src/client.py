@@ -2,7 +2,9 @@ import socket
 
 
 class Client:
+    BUFFER_SIZE = 65535
     DEFAULT_MESSAGES = ("BUSCAR root", "NUMERO", "SALIR")
+    ERROR_PREFIX = "ERROR"
 
     def __init__(
         self,
@@ -21,13 +23,20 @@ class Client:
 
         try:
             for message in self.messages:
-                udp_socket.sendto(message.encode("utf-8"), (self.host, self.port))
-                data, _address = udp_socket.recvfrom(65535)
-                print(data.decode("utf-8"))
+                response = self._send_message(udp_socket, message)
+                print(response)
         except OSError as error:
-            print(f"ERROR {error}")
+            print(f"{self.ERROR_PREFIX} {error}")
         finally:
             udp_socket.close()
+
+    def _send_message(self, udp_socket, message):
+        udp_socket.sendto(message.encode("utf-8"), self._server_address())
+        data, _address = udp_socket.recvfrom(self.BUFFER_SIZE)
+        return data.decode("utf-8")
+
+    def _server_address(self):
+        return self.host, self.port
 
     def _create_socket(self):
         return socket.socket(socket.AF_INET, socket.SOCK_DGRAM)

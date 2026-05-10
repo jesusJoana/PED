@@ -1,6 +1,5 @@
 import io
 import os
-import socket
 import sys
 import unittest
 from contextlib import redirect_stdout
@@ -48,7 +47,8 @@ class TestClientIteration2(unittest.TestCase):
         fake_socket = FakeSocket(responses=["RESULTADO 0", "OK 1", "OK"])
         client = Client(socket_factory=Mock(return_value=fake_socket))
 
-        client.run()
+        with redirect_stdout(io.StringIO()):
+            client.run()
 
         self.assertGreaterEqual(len(fake_socket.sent_messages), 3)
         for data, address in fake_socket.sent_messages:
@@ -71,7 +71,8 @@ class TestClientIteration2(unittest.TestCase):
         fake_socket = FakeSocket(responses=["RESULTADO 0", "OK 1", "OK"])
         client = Client(socket_factory=Mock(return_value=fake_socket))
 
-        client.run()
+        with redirect_stdout(io.StringIO()):
+            client.run()
 
         self.assertTrue(fake_socket.closed)
 
