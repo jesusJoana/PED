@@ -93,6 +93,87 @@ class ServidorTest(unittest.TestCase):
         self.assertTrue(response.startswith("ERROR:"))
         self.assertIn(missing_path, response)
 
+    # ============================================================
+    # Iteracion 2 - Test 2 Unitario
+    #
+    # Objetivo:
+    # Definir el procesamiento de una peticion TCP individual.
+    #
+    # Requisitos:
+    # R3: El cliente envia una peticion de fichero.
+    # R4: El servidor responde con el contenido del fichero.
+    # R5: El servidor responde con error si no puede leer el fichero.
+    # R8: Atender una peticion individual no implica finalizar el servidor.
+    # ============================================================
+
+    def test_iteracion_2_servidor_procesa_peticion_de_fichero_existente(self):
+        """
+        Requisitos: R3, R4, R8.
+        Comprueba que el servidor procesa una ruta recibida como peticion
+        individual y devuelve la respuesta correspondiente.
+        """
+        from server import FileServer
+
+        with tempfile.NamedTemporaryFile("w", delete=False) as file:
+            file.write("respuesta desde process_request tcp\n")
+            file_path = file.name
+
+        try:
+            response = FileServer().process_request(file_path)
+
+            self.assertEqual("respuesta desde process_request tcp\n", response)
+        finally:
+            os.unlink(file_path)
+
+    def test_iteracion_2_servidor_atiende_conexion_individual(self):
+        """
+        Requisitos: R3, R4, R8.
+        Comprueba que el servidor lee una peticion desde una conexion,
+        envia la respuesta por esa misma conexion y cierra solo el cliente.
+        """
+        from server import FileServer
+
+        with tempfile.NamedTemporaryFile("w", delete=False) as file:
+            file.write("respuesta desde handle_client tcp\n")
+            file_path = file.name
+
+        connection = FakeConnection([file_path.encode("utf-8"), b""])
+
+        try:
+            FileServer().handle_client(connection)
+
+            self.assertEqual(
+                "respuesta desde handle_client tcp\n",
+                b"".join(connection.sent_data).decode("utf-8"),
+            )
+            self.assertTrue(connection.closed)
+        finally:
+            os.unlink(file_path)
+
+
+class FakeConnection:
+    def __init__(self, received_data):
+        self.received_data = list(received_data)
+        self.sent_data = []
+        self.closed = False
+
+    def recv(self, _buffer_size):
+        if self.received_data:
+            return self.received_data.pop(0)
+        return b""
+
+    def sendall(self, data):
+        self.sent_data.append(data)
+
+    def close(self):
+        self.closed = True
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, _exc_type, _exc_value, _traceback):
+        self.close()
+
 
 if __name__ == "__main__":
     unittest.main()
