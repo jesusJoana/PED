@@ -3,6 +3,7 @@ import sys
 
 from client import FileClient
 from server import FileServer
+from setproctitle import setproctitle
 
 
 def build_parser():
@@ -18,6 +19,7 @@ def main(argv=None):
     args = parser.parse_args(argv)
 
     if args.mode == "server":
+        setproctitle("serv6")
         # El servidor queda bloqueado atendiendo clientes hasta cierre manual.
         FileServer().start()
         return 0
@@ -25,6 +27,7 @@ def main(argv=None):
     if args.file is None:
         parser.error("el modo client requiere el path absoluto de un fichero")
 
+    setproctitle("cli6")
     # El cliente imprime la respuesta recibida y termina.
     response = FileClient().request_file(args.file)
     print(response, end="")
