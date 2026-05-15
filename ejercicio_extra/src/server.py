@@ -18,7 +18,7 @@ class FileServer:
 
     def serve_forever(self):
         """Crea el socket UDS y atiende clientes hasta recibir una interrupcion."""
-        self._remove_old_socket()
+        self._prepare_socket()
 
         with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as server_socket:
             self.server_socket = server_socket
@@ -28,9 +28,7 @@ class FileServer:
             while True:
                 connection, _ = server_socket.accept()
                 with connection:
-                    file_path = connection.recv(4096).decode("utf-8")
-                    response = self.build_response(file_path)
-                    connection.sendall(response.encode("utf-8"))
+                    self._handle_connection(connection)
 
     def close(self):
         """Cierra el socket del servidor y elimina la entrada UDS si existe."""
@@ -46,6 +44,16 @@ class FileServer:
     def _build_error(self, file_path, error):
         """Construye una respuesta de error legible para el cliente."""
         return f"ERROR: no se pudo leer el fichero '{file_path}': {error}"
+
+    def _prepare_socket(self):
+        """Prepara la ruta UDS antes de enlazar el socket del servidor."""
+        self._remove_old_socket()
+
+    def _handle_connection(self, connection):
+        """Atiende una peticion de cliente sin detener el servidor."""
+        file_path = connection.recv(4096).decode("utf-8")
+        response = self.build_response(file_path)
+        connection.sendall(response.encode("utf-8"))
 
     def _remove_old_socket(self):
         """Evita errores de bind si quedo un socket UDS anterior en la misma ruta."""
