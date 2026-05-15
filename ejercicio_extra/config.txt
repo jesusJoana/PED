@@ -1,0 +1,1 @@
+/tmp/ped_g6_serv4.sock
