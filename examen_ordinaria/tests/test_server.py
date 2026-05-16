@@ -1,3 +1,5 @@
+import contextlib
+import io
 import socket
 import threading
 import time
@@ -137,6 +139,37 @@ class TestTCPServer(unittest.TestCase):
 
         self.assertEqual("m:3", response)
         self.assertEqual(b"", closed_data)
+        self.assertFalse(server_thread.is_alive())
+
+    # Iteracion 7 - Test 7 Unitario
+    # Requisito: cada vez que recibe una conexion, el servidor debe escribir en
+    # error estandar la IP del cliente y el mensaje recibido.
+    def test_server_logs_client_ip_and_received_message_to_stderr(self):
+        from src.server import TCPServer
+
+        port = self._get_free_port()
+        server = TCPServer(host="127.0.0.1", port=port)
+        stderr_buffer = io.StringIO()
+
+        def run_server():
+            with contextlib.redirect_stderr(stderr_buffer):
+                server.start(max_connections=1)
+
+        server_thread = threading.Thread(target=run_server, daemon=True)
+        server_thread.start()
+        time.sleep(0.1)
+
+        message = "m:combinaciones momentaneas de palabras"
+        with socket.create_connection(("127.0.0.1", port), timeout=2) as client:
+            client.settimeout(2)
+            client.sendall(message.encode("utf-8"))
+            client.recv(1024)
+
+        server_thread.join(timeout=2)
+        stderr_output = stderr_buffer.getvalue()
+
+        self.assertIn("127.0.0.1", stderr_output)
+        self.assertIn(message, stderr_output)
         self.assertFalse(server_thread.is_alive())
 
 

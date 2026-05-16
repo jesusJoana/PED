@@ -7,25 +7,25 @@ FILE?=$(CURDIR)/fichero.txt
 .PHONY: install test run server client clean freeze
 
 install:
-	$(PYTHON) -m venv $(VENV)
-	$(PIP) install --upgrade pip
-	if [ -f requirements.txt ]; then $(PIP) install -r requirements.txt; fi
+	@$(PYTHON) -m venv $(VENV)
+	@$(PIP) install --upgrade pip
+	@if [ -f requirements.txt ]; then $(PIP) install -r requirements.txt; fi
 
 test:
-	PYTHONPATH=$(CURDIR) $(PY) -m unittest discover -s tests -v
+	@PYTHONPATH=$(CURDIR) $(PY) -m unittest discover -s tests -v
 
 run:
-	PYTHONPATH=$(CURDIR) $(PY) src/main.py client $(FILE)
+	@PYTHONPATH=$(CURDIR) $(PY) src/main.py client
 
 server:
-	PYTHONPATH=$(CURDIR) $(PY) src/main.py server
+	@PYTHONPATH=$(CURDIR) $(PY) src/main.py server
 
 client:
-	PYTHONPATH=$(CURDIR) $(PY) src/main.py client $(FILE)
+	@PYTHONPATH=$(CURDIR) $(PY) src/main.py client
 
 clean:
-	find . -type d -name "__pycache__" -exec rm -rf {} +
-	find . -type f -name "*.pyc" -delete
+	@find . -type d -name "__pycache__" -exec rm -rf {} +
+	@find . -type f -name "*.pyc" -delete
 
 freeze:
-	$(PIP) freeze > requirements.txt
+	@$(PIP) freeze > requirements.txt
