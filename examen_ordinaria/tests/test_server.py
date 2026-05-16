@@ -1,3 +1,6 @@
+import socket
+import threading
+import time
 import unittest
 
 
@@ -55,6 +58,86 @@ class TestMessageProcessor(unittest.TestCase):
         response = self.processor.process("mm:frase con formato invalido")
 
         self.assertEqual("ERROR", response)
+
+
+class TestTCPServer(unittest.TestCase):
+    """Pruebas unitarias de la clase servidor usando sockets TCP reales."""
+
+    def setUp(self):
+        # La importacion se hace aqui para que la fase RED falle test a test
+        # mientras la clase TCPServer aun no exista.
+        from src.server import TCPServer
+
+        # Cada prueba crea su propio servidor con configuracion por defecto.
+        self.server = TCPServer()
+
+    def _get_free_port(self):
+        # Pedimos al sistema un puerto libre para no depender del puerto real
+        # del contrato durante las pruebas.
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as test_socket:
+            test_socket.bind(("127.0.0.1", 0))
+            return test_socket.getsockname()[1]
+
+    # Iteracion 2 - Test 2 Unitario
+    # Requisito del contrato: si no se indica otro valor, el host por defecto es
+    # 127.0.0.1.
+    def test_server_default_host_is_localhost(self):
+        self.assertEqual("127.0.0.1", self.server.host)
+
+    # Iteracion 2 - Test 2 Unitario
+    # Requisito del contrato: si el enunciado no indica otro valor, el puerto
+    # por defecto es 16063.
+    def test_server_default_port_is_contract_port(self):
+        self.assertEqual(16063, self.server.port)
+
+    # Iteracion 2 - Test 2 Unitario
+    # Requisito: el servidor calcula la respuesta correcta para mensajes
+    # validos usando la logica del protocolo.
+    def test_server_handles_valid_message(self):
+        response = self.server.handle_message(
+            "m:combinaciones momentaneas de palabras"
+        )
+
+        self.assertEqual("m:3", response)
+
+    # Iteracion 2 - Test 2 Unitario
+    # Requisito: cualquier mensaje no reconocido debe producir ERROR.
+    def test_server_handles_invalid_message(self):
+        response = self.server.handle_message("mensaje incorrecto")
+
+        self.assertEqual("ERROR", response)
+
+    # Iteracion 2 - Test 2 Unitario
+    # Requisito: el servidor debe escuchar mediante TCP, aceptar una conexion
+    # real, recibir UTF-8, responder por la misma conexion y cerrar el cliente.
+    def test_server_accepts_tcp_connection_responds_and_closes_client(self):
+        from src.server import TCPServer
+
+        port = self._get_free_port()
+        server = TCPServer(host="127.0.0.1", port=port)
+
+        # En pruebas limitamos el servidor a una conexion para que el hilo
+        # termine y el test no quede bloqueado.
+        server_thread = threading.Thread(
+            target=server.start,
+            kwargs={"max_connections": 1},
+            daemon=True,
+        )
+        server_thread.start()
+        time.sleep(0.1)
+
+        with socket.create_connection(("127.0.0.1", port), timeout=2) as client:
+            client.settimeout(2)
+            client.sendall("m:combinaciones momentaneas de palabras".encode("utf-8"))
+
+            response = client.recv(1024).decode("utf-8")
+            closed_data = client.recv(1024)
+
+        server_thread.join(timeout=2)
+
+        self.assertEqual("m:3", response)
+        self.assertEqual(b"", closed_data)
+        self.assertFalse(server_thread.is_alive())
 
 
 if __name__ == "__main__":
