@@ -1,4 +1,5 @@
 import socket
+import sys
 
 from src.protocol import MessageProcessor
 
@@ -36,5 +37,10 @@ class TCPServer:
         with connection:
             data = connection.recv(4096)
             message = data.decode("utf-8")
+            self.log_connection(address[0], message)
             response = self.handle_message(message)
             connection.sendall(response.encode("utf-8"))
+
+    def log_connection(self, client_ip, message):
+        # El enunciado exige registrar IP y mensaje recibido en error estandar.
+        print(f"Cliente {client_ip} envio: {message}", file=sys.stderr)
