@@ -1,0 +1,63 @@
+INSTALACION
+===========
+
+Requisitos
+----------
+
+- Linux
+- Python 3
+- make
+
+No se utilizan dependencias externas obligatorias.
+
+Preparacion del entorno
+-----------------------
+
+Desde la carpeta examen_ordinaria:
+
+  make install
+
+Este comando crea el entorno virtual en:
+
+  venv/
+
+Ejecucion de pruebas
+--------------------
+
+Desde la carpeta examen_ordinaria:
+
+  make test
+
+Ejecucion del servidor
+----------------------
+
+Desde la carpeta examen_ordinaria:
+
+  make server
+
+El servidor queda ejecutandose de forma continua en:
+
+  127.0.0.1:16063
+
+Para detenerlo, usar Ctrl+C.
+
+Ejecucion del cliente
+---------------------
+
+Con el servidor en ejecucion, abrir otra terminal y ejecutar:
+
+  make client
+
+Cuando pregunte la direccion completa del servidor, introducir:
+
+  127.0.0.1:16063
+
+El cliente enviara tres mensajes, imprimira las respuestas recibidas y
+terminara.
+
+Limpieza
+--------
+
+Para eliminar caches de Python:
+
+  make clean

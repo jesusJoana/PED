@@ -181,6 +181,57 @@ integración:
 Las pruebas unitarias y las pruebas de integración no se mezclarán en una misma
 entrega salvo autorización explícita del usuario.
 
+### Definición pragmática de prueba unitaria en ejercicios IPC
+
+En el contexto de examen de esta asignatura, cuando el ejercicio trate sobre
+comunicación entre procesos o cliente-servidor, las pruebas denominadas
+"unitarias" podrán utilizar el mecanismo IPC real indicado por el enunciado.
+
+Esto aplica, entre otros, a:
+
+- sockets TCP,
+- sockets UDP,
+- Unix Domain Sockets,
+- FIFOs,
+- pipes,
+- ficheros temporales usados como recurso de comunicación,
+- o cualquier otro mecanismo IPC especificado en el problema.
+
+Por tanto, no será obligatorio sustituir dichos mecanismos por mocks, fakes o
+maquetas. El mecanismo IPC se considerará parte de la unidad bajo prueba cuando
+sea una responsabilidad propia de la clase o módulo probado.
+
+Ejemplos:
+
+- una prueba unitaria del servidor TCP puede crear un socket real, hacer `bind`,
+  `listen`, aceptar una conexión de prueba y comprobar la respuesta;
+- una prueba unitaria del cliente TCP puede usar la API real de `socket` para
+  conectarse a un servidor de prueba;
+- una prueba unitaria de un servidor UDP puede enviar datagramas reales desde el
+  propio test;
+- una prueba unitaria de una clase basada en FIFO puede crear una FIFO real en
+  un directorio temporal;
+- una prueba unitaria de una clase basada en pipes puede usar pipes reales del
+  sistema.
+
+La diferencia entre prueba unitaria e integración vendrá dada por el alcance del
+comportamiento validado, no por la presencia o ausencia del IPC real:
+
+- En una prueba unitaria se valida una clase, módulo o responsabilidad concreta,
+  aunque para ello se use el IPC real necesario.
+- En una prueba de integración se valida la colaboración completa entre varios
+  componentes reales del sistema, normalmente cliente y servidor ejecutando el
+  flujo extremo a extremo previsto por el enunciado.
+
+Los tests unitarios que usen IPC real deberán diseñarse para no bloquear:
+
+- usarán timeouts cuando corresponda;
+- usarán puertos, rutas o recursos temporales de prueba;
+- limitarán el número de conexiones, mensajes o iteraciones cuando el programa
+  real sea continuo;
+- cerrarán correctamente sockets, descriptores, FIFOs, pipes y procesos creados
+  durante la prueba.
+
 El orden de trabajo será:
 
 1. Primero se desarrollará el ciclo TDD de pruebas unitarias.
@@ -239,12 +290,17 @@ El objetivo es garantizar que cada entrega `Test n` o `Test n Integración` pued
 observarse realmente en estado RED antes de su correspondiente entrega
 `Test n OK` o `Test n Integración OK`.
 
-En prácticas cliente-servidor, las pruebas unitarias no deberán adelantar el
-arranque real completo del servidor si dicha funcionalidad está reservada para
-una iteración de integración. Por ejemplo, implementar una operación unitaria
-como `handle_client` no autoriza a implementar también `bind`, `listen`,
-`accept` y el bucle persistente del servidor, salvo que el plan aprobado lo
-indique explícitamente.
+En prácticas cliente-servidor o IPC, las pruebas unitarias podrán cubrir el uso
+real del mecanismo de comunicación cuando este forme parte de la responsabilidad
+de la clase probada. Por ejemplo, si una iteración unitaria del servidor TCP
+define que el servidor debe escuchar y responder una conexión, podrá
+implementarse `bind`, `listen` y `accept` para un número limitado de conexiones
+de prueba.
+
+Lo que no deberá hacerse es adelantar funcionalidad de iteraciones futuras que
+no haya sido descrita por las pruebas actuales. Por ejemplo, una prueba que solo
+exija procesar un mensaje no justifica implementar todavía el bucle persistente
+completo del servidor, salvo que el plan aprobado lo indique explícitamente.
 
 ### 3. Entregas "Refactor n"
 
@@ -275,16 +331,18 @@ Siempre que sea razonable, las pruebas utilizarán:
 - FIFOs reales,
 - pipes reales.
 
-### Uso de sockets y mocks en pruebas
+### Uso de IPC real y mocks en pruebas
 
 Cuando el mecanismo IPC especificado en el enunciado sea una parte esencial del ejercicio
-(por ejemplo sockets UDS, sockets TCP/IP, FIFOs o pipes), las pruebas deberán utilizar
-dicho mecanismo real siempre que sea razonable dentro del entorno Linux objetivo.
+(por ejemplo sockets TCP, sockets UDP, sockets UDS, FIFOs o pipes), las pruebas deberán
+utilizar dicho mecanismo real siempre que sea razonable dentro del entorno Linux objetivo.
 
 En particular, no se deberán mockear sockets, FIFOs, pipes u otros mecanismos IPC solo
-por tratarse de pruebas unitarias. Se asumirá que las librerías estándar del sistema y de
-Python funcionan correctamente, pero se probará que nuestro código las utiliza de forma
-adecuada y cumple el protocolo requerido.
+por tratarse de pruebas unitarias. En estos ejercicios, el uso correcto del IPC real forma
+parte del comportamiento que debe demostrar el código.
+
+Se asumirá que las librerías estándar del sistema y de Python funcionan correctamente, pero
+se probará que nuestro código las utiliza de forma adecuada y cumple el protocolo requerido.
 
 La diferencia entre pruebas unitarias e integración no vendrá determinada por usar mocks,
 sino por el alcance de la prueba:

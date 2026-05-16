@@ -1,6 +1,6 @@
 import sys
 
-from src.client import TCPClient
+from src.client import TCPClient, parse_server_address
 from src.server import TCPServer
 
 
@@ -11,10 +11,18 @@ def run_server():
 
 
 def run_client():
-    # El cliente automatico envia los mensajes por defecto e imprime respuestas.
-    client = TCPClient()
+    # El cliente modificado pregunta al usuario la direccion completa.
+    address_text = input("Direccion completa del servidor (host:puerto): ")
+    try:
+        host, port = parse_server_address(address_text.strip())
+    except ValueError:
+        print("ERROR: direccion del servidor invalida")
+        return 1
+
+    client = TCPClient(host=host, port=port)
     for response in client.send_default_messages():
         print(response)
+    return 0
 
 
 def main(arguments=None):
@@ -31,8 +39,7 @@ def main(arguments=None):
         run_server()
         return 0
     if mode == "client":
-        run_client()
-        return 0
+        return run_client()
 
     print("ERROR: modo no reconocido", file=sys.stderr)
     return 1

@@ -1,6 +1,18 @@
 import socket
 
 
+def parse_server_address(address_text):
+    # La direccion completa se espera en formato host:puerto.
+    if ":" not in address_text:
+        raise ValueError("direccion invalida")
+
+    host, port_text = address_text.rsplit(":", 1)
+    if not host or not port_text.isdigit():
+        raise ValueError("direccion invalida")
+
+    return host, int(port_text)
+
+
 class TCPClient:
     """Cliente TCP que envia un mensaje por conexion."""
 

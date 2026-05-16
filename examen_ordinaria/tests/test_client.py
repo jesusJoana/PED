@@ -94,6 +94,33 @@ class TestTCPClient(unittest.TestCase):
 
         self.assertTrue(response.startswith("ERROR"))
 
+    # Iteracion 8 - Test 8 Unitario
+    # Requisito: el cliente modificado interpreta una direccion completa
+    # indicada por el usuario en formato host:puerto.
+    def test_parse_server_address_returns_host_and_port(self):
+        from src.client import parse_server_address
+
+        host, port = parse_server_address("127.0.0.1:16063")
+
+        self.assertEqual("127.0.0.1", host)
+        self.assertEqual(16063, port)
+
+    # Iteracion 8 - Test 8 Unitario
+    # Requisito: una direccion sin puerto no es valida.
+    def test_parse_server_address_without_port_raises_error(self):
+        from src.client import parse_server_address
+
+        with self.assertRaises(ValueError):
+            parse_server_address("127.0.0.1")
+
+    # Iteracion 8 - Test 8 Unitario
+    # Requisito: una direccion con puerto no numerico no es valida.
+    def test_parse_server_address_with_non_numeric_port_raises_error(self):
+        from src.client import parse_server_address
+
+        with self.assertRaises(ValueError):
+            parse_server_address("127.0.0.1:abc")
+
 
 if __name__ == "__main__":
     # Permite ejecutar este archivo de test directamente con python.
