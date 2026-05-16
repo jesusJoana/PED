@@ -49,7 +49,12 @@ class ApplicationLauncher:
 
         if mode == "server":
             server = FileServer(socket_path)
-            server.serve_forever()
+            try:
+                server.serve_forever()
+            except KeyboardInterrupt:
+                print("\nServidor detenido manualmente con Control + C.")
+            finally:
+                server.close()
         else:
             client = FileClient(socket_path)
             print(client.request_file(file_path), end="")

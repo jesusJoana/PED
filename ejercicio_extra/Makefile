@@ -12,16 +12,16 @@ install:
 	if [ -f requirements.txt ]; then $(PIP) install -r requirements.txt; fi
 
 test:
-	$(PY) -m unittest discover -s tests -v
+	PYTHONPATH=$(CURDIR) $(PY) -m unittest discover -s tests -v
 
 run:
-	$(PY) src/main.py client $(FILE)
+	PYTHONPATH=$(CURDIR) $(PY) src/main.py client $(FILE)
 
 server:
-	$(PY) src/main.py server
+	PYTHONPATH=$(CURDIR) $(PY) src/main.py server
 
 client:
-	$(PY) src/main.py client $(FILE)
+	PYTHONPATH=$(CURDIR) $(PY) src/main.py client $(FILE)
 
 clean:
 	find . -type d -name "__pycache__" -exec rm -rf {} +

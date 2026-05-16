@@ -68,7 +68,7 @@ Eliminar caches de Python:
 
    make clean
 
-Notas
+Notass
 -----
 
 Los procesos se lanzan mediante los ejecutables serv4 y cli4 para que sus

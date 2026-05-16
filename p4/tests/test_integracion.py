@@ -10,6 +10,8 @@ PROJECT_ROOT = os.path.dirname(os.path.dirname(__file__))
 MAIN_PATH = os.path.join(PROJECT_ROOT, "src", "main.py")
 SERV4_PATH = os.path.join(PROJECT_ROOT, "serv4")
 CLI4_PATH = os.path.join(PROJECT_ROOT, "cli4")
+README_PATH = os.path.join(PROJECT_ROOT, "README.txt")
+INSTALL_PATH = os.path.join(PROJECT_ROOT, "INSTALL.txt")
 
 
 class IntegracionTest(unittest.TestCase):
@@ -220,6 +222,26 @@ class IntegracionTest(unittest.TestCase):
                 return args
             time.sleep(0.05)
         self.fail(f"No aparece {expected_text} en ps para el proceso {pid}")
+
+    # ============================================================
+    # Iteracion 4
+    # ============================================================
+
+    def test_iteracion_4_readme_e_install_existen_y_documentan_uso(self):
+        self.assertTrue(os.path.exists(README_PATH), "Falta README.txt")
+        self.assertTrue(os.path.exists(INSTALL_PATH), "Falta INSTALL.txt")
+
+        with open(README_PATH, "r", encoding="utf-8") as readme:
+            readme_content = readme.read()
+
+        with open(INSTALL_PATH, "r", encoding="utf-8") as install:
+            install_content = install.read()
+
+        for expected_text in ["cliente-servidor", "UDS", "make server", "make client"]:
+            self.assertIn(expected_text, readme_content)
+
+        for expected_text in ["make install", "make test", "make server", "make client"]:
+            self.assertIn(expected_text, install_content)
 
 
 if __name__ == "__main__":

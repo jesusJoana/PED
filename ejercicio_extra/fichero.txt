@@ -1,0 +1,2 @@
+Contenido de prueba para ejercicio_extra.
+Este fichero permite probar make client sin indicar FILE.

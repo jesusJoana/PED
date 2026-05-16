@@ -218,6 +218,34 @@ Cada entrega `Test n OK` deberá:
 
 El objetivo será alcanzar rápidamente un estado funcional y verificable.
 
+### Regla de alcance estricto por iteración
+
+En cada entrega `Test n OK`, la implementación deberá limitarse estrictamente a
+la funcionalidad exigida por las pruebas introducidas en `Test n`.
+
+No se implementará funcionalidad planificada para iteraciones posteriores,
+aunque parezca sencilla, natural o conveniente completarla en ese momento.
+
+Si una funcionalidad prevista para una iteración posterior resultara necesaria
+para hacer pasar el `Test n` actual, deberá revisarse el plan de iteraciones
+antes de implementarla. En ese caso se decidirá explícitamente una de estas dos
+opciones:
+
+- adelantar formalmente dicha funcionalidad a la iteración actual;
+- o dividir mejor las pruebas para conservar el estado RED de la iteración
+  futura.
+
+El objetivo es garantizar que cada entrega `Test n` o `Test n Integración` pueda
+observarse realmente en estado RED antes de su correspondiente entrega
+`Test n OK` o `Test n Integración OK`.
+
+En prácticas cliente-servidor, las pruebas unitarias no deberán adelantar el
+arranque real completo del servidor si dicha funcionalidad está reservada para
+una iteración de integración. Por ejemplo, implementar una operación unitaria
+como `handle_client` no autoriza a implementar también `bind`, `listen`,
+`accept` y el bucle persistente del servidor, salvo que el plan aprobado lo
+indique explícitamente.
+
 ### 3. Entregas "Refactor n"
 
 Cada entrega `Refactor n` deberá:

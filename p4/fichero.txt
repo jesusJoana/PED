@@ -1,0 +1,2 @@
+Contenido de ejemplo para la practica 4.
+Este fichero permite probar el cliente con make client.

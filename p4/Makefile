@@ -2,7 +2,7 @@ PYTHON=python3
 VENV=venv
 PIP=$(VENV)/bin/pip
 PY=$(VENV)/bin/python
-FILE?=/tmp/prueba.txt
+FILE?=$(CURDIR)/fichero.txt
 SOCKET?=/tmp/serv4.sock
 
 .PHONY: install test run server client clean freeze

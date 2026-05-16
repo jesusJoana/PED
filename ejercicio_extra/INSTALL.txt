@@ -1,0 +1,72 @@
+INSTALL - ejercicio_extra
+=========================
+
+Requisitos
+----------
+
+- Maquina Linux.
+- Python 3.
+- make.
+- venv.
+
+La practica usa la dependencia externa setproctitle para cambiar el nombre de
+los procesos y cumplir el requisito de que aparezcan cli4 y serv4 en ps.
+
+Instalacion
+-----------
+
+Desde la carpeta ejercicio_extra:
+
+make install
+
+Este comando crea el entorno virtual venv e instala las dependencias indicadas
+en requirements.txt.
+
+Ejecucion de pruebas
+--------------------
+
+Despues de instalar:
+
+make test
+
+Ejecucion del servidor
+----------------------
+
+Desde la carpeta ejercicio_extra:
+
+make server
+
+El servidor lee la ruta del socket desde config.txt y queda escuchando
+peticiones. Para pararlo se usa Control + C.
+
+Ejecucion del cliente
+---------------------
+
+En otra terminal, desde la carpeta ejercicio_extra:
+
+make client FILE=/ruta/completa/fichero.txt
+
+Ejemplo:
+
+make client FILE=/tmp/prueba.txt
+
+Configuracion del socket
+------------------------
+
+La ruta del socket UDS se configura en:
+
+config.txt
+
+Por defecto contiene:
+
+/tmp/ped_g6_serv4.sock
+
+Para cambiar la ruta, editar config.txt y escribir una nueva direccion dentro de
+/tmp. No es necesario modificar codigo ni recompilar.
+
+Limpieza
+--------
+
+Para eliminar ficheros temporales de Python:
+
+make clean
