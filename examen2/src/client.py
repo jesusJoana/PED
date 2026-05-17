@@ -26,8 +26,7 @@ class UDPInfoClient:
 
     def run(self, output=None):
         """Envia los mensajes configurados e imprime cada respuesta recibida."""
-        if output is None:
-            output = sys.stdout
+        output = self._resolve_output(output)
 
         with self._create_socket() as sock:
             for message in self.messages:
@@ -40,13 +39,9 @@ class UDPInfoClient:
         """Pregunta direccion y peticion, envia un mensaje e imprime respuesta."""
         if input_stream is None:
             input_stream = sys.stdin
-        if output is None:
-            output = sys.stdout
+        output = self._resolve_output(output)
 
-        print("Direccion del servidor (host:puerto):", file=output)
-        address_line = input_stream.readline().strip()
-        print("Peticion:", file=output)
-        message = input_stream.readline().strip()
+        address_line, message = self._read_interactive_request(input_stream, output)
 
         try:
             host, port = self._parse_address(address_line)
@@ -54,14 +49,32 @@ class UDPInfoClient:
             print("ERROR", file=output)
             return
 
-        client = UDPInfoClient(
+        client = self._create_single_message_client(host, port, message)
+        client.run(output=output)
+
+    def _resolve_output(self, output):
+        """Devuelve el flujo de salida indicado o stdout por defecto."""
+        if output is None:
+            return sys.stdout
+        return output
+
+    def _read_interactive_request(self, input_stream, output):
+        """Lee direccion y peticion desde el flujo interactivo."""
+        print("Direccion del servidor (host:puerto):", file=output)
+        address_line = input_stream.readline().strip()
+        print("Peticion:", file=output)
+        message = input_stream.readline().strip()
+        return address_line, message
+
+    def _create_single_message_client(self, host, port, message):
+        """Crea un cliente configurado para enviar una unica peticion."""
+        return UDPInfoClient(
             host=host,
             port=port,
             messages=[message],
             timeout=self.timeout,
             attempts=self.attempts,
         )
-        client.run(output=output)
 
     def _create_socket(self):
         """Crea el socket UDP configurado con timeout."""
