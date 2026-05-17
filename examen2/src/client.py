@@ -36,6 +36,33 @@ class UDPInfoClient:
                 if response is None:
                     break
 
+    def run_interactive(self, input_stream=None, output=None):
+        """Pregunta direccion y peticion, envia un mensaje e imprime respuesta."""
+        if input_stream is None:
+            input_stream = sys.stdin
+        if output is None:
+            output = sys.stdout
+
+        print("Direccion del servidor (host:puerto):", file=output)
+        address_line = input_stream.readline().strip()
+        print("Peticion:", file=output)
+        message = input_stream.readline().strip()
+
+        try:
+            host, port = self._parse_address(address_line)
+        except ValueError:
+            print("ERROR", file=output)
+            return
+
+        client = UDPInfoClient(
+            host=host,
+            port=port,
+            messages=[message],
+            timeout=self.timeout,
+            attempts=self.attempts,
+        )
+        client.run(output=output)
+
     def _create_socket(self):
         """Crea el socket UDP configurado con timeout."""
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -53,6 +80,11 @@ class UDPInfoClient:
                 pass
 
         return None
+
+    def _parse_address(self, address_line):
+        """Convierte una direccion host:puerto en sus dos componentes."""
+        host, port_text = address_line.rsplit(":", 1)
+        return host, int(port_text)
 
     def _print_response(self, output, response):
         """Imprime la respuesta recibida o ERROR si no hubo respuesta."""

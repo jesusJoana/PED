@@ -12,7 +12,7 @@ def main():
 
     if len(sys.argv) > 1 and sys.argv[1] == "client":
         client = UDPInfoClient(host=host, port=port)
-        client.run()
+        client.run_interactive()
         return
 
     server = UDPInfoServer(host=host, port=port)
