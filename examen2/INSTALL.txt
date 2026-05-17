@@ -1,0 +1,115 @@
+INSTALL - examen2
+=================
+
+Requisitos
+----------
+
+- Sistema Linux.
+- Python 3.
+- make.
+
+El proyecto usa solamente librerias estandar de Python. No requiere
+dependencias externas.
+
+Estructura principal
+--------------------
+
+src/main.py
+src/server.py
+src/client.py
+tests/test_server.py
+tests/test_client.py
+tests/test_integracion.py
+Makefile
+
+Instalacion
+-----------
+
+Desde la carpeta examen2, crear el entorno virtual con:
+
+make install
+
+Este comando:
+
+- crea el entorno virtual venv;
+- actualiza pip;
+- instala requirements.txt si existe.
+
+Ejecucion del servidor
+----------------------
+
+Desde la carpeta examen2:
+
+make server
+
+El servidor escucha en:
+
+127.0.0.1:16063
+
+Permanece en ejecucion hasta recibir el mensaje:
+
+SALIR
+
+Ejecucion del cliente
+---------------------
+
+Desde la carpeta examen2:
+
+make client
+
+El cliente pedira la direccion completa del servidor. Escribir:
+
+127.0.0.1:16063
+
+El cliente enviara sus mensajes al servidor, imprimira las respuestas en salida
+estandar y terminara.
+
+Ejecucion rapida
+----------------
+
+Terminal 1:
+
+make server
+
+Terminal 2:
+
+make client
+
+Cuando el cliente solicite la direccion:
+
+127.0.0.1:16063
+
+Ejecucion de pruebas
+--------------------
+
+Desde la carpeta examen2:
+
+make test
+
+Limpieza de temporales
+----------------------
+
+Para eliminar __pycache__ y ficheros .pyc:
+
+make clean
+
+Comandos disponibles
+--------------------
+
+make install
+make test
+make server
+make client
+make run
+make clean
+make freeze
+
+Notas
+-----
+
+- Las comunicaciones se realizan por UDP.
+- Los mensajes se codifican en UTF-8.
+- El servidor consulta /etc/passwd y /etc/services.
+- El puerto por defecto es 16063.
+- El host por defecto es 127.0.0.1.
+

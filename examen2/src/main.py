@@ -16,7 +16,7 @@ def main():
 
     if sys.argv[1] == "client":
         client = UDPTextSearchClient()
-        client.run()
+        client.run_interactive()
         return 0
 
     print("ERROR")

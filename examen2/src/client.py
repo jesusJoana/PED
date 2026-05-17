@@ -31,6 +31,32 @@ class UDPTextSearchClient:
 
                 print(response, file=output_stream)
 
+    def run_interactive(self, input_stream=None, output=None):
+        input_data = input_stream if input_stream is not None else sys.stdin
+        output_stream = output if output is not None else sys.stdout
+
+        try:
+            host, port = self._parse_server_address(input_data.readline().strip())
+        except ValueError:
+            print("ERROR", file=output_stream)
+            return
+
+        self.host = host
+        self.port = port
+        self.run(output=output_stream)
+
+    def _parse_server_address(self, address):
+        host, separator, port_text = address.rpartition(":")
+        if separator == "" or host == "" or port_text == "":
+            raise ValueError("Direccion de servidor invalida")
+
+        try:
+            port = int(port_text)
+        except ValueError as exc:
+            raise ValueError("Puerto invalido") from exc
+
+        return host, port
+
     def _send_and_receive(self, client_socket, message):
         client_socket.sendto(message.encode("utf-8"), (self.host, self.port))
         data, _ = client_socket.recvfrom(self.BUFFER_SIZE)
