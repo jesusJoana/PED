@@ -1,4 +1,5 @@
 import socket
+import sys
 
 
 class UDPTextSearchServer:
@@ -41,6 +42,7 @@ class UDPTextSearchServer:
             while not self.should_stop:
                 data, client_address = server_socket.recvfrom(self.BUFFER_SIZE)
                 message = data.decode("utf-8")
+                self._log_request(client_address, message)
                 response = self.handle_message(message)
                 server_socket.sendto(response.encode("utf-8"), client_address)
 
@@ -66,6 +68,10 @@ class UDPTextSearchServer:
             return "RESULTADO 0"
 
         return f"RESULTADO {len(matches)}\n" + "\n".join(matches)
+
+    def _log_request(self, client_address, message):
+        client_ip = client_address[0]
+        print(f"{client_ip} {message}", file=sys.stderr)
 
     def _find_matches(self, search_text):
         matches = []
