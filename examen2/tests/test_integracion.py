@@ -41,6 +41,13 @@ class TestIntegracionIteracion3(unittest.TestCase):
             text=True,
         )
 
+    def _crear_servidor_listo(self, port):
+        """Arranca el servidor, registra su limpieza y espera a que este listo."""
+        process = self._arrancar_servidor_real(port)
+        self.addCleanup(self._cerrar_servidor, process, port)
+        self._esperar_servidor(process, port)
+        return process
+
     def _esperar_servidor(self, process, port):
         """Espera brevemente a que el servidor acepte datagramas UDP."""
         deadline = time.time() + TIMEOUT
@@ -61,15 +68,24 @@ class TestIntegracionIteracion3(unittest.TestCase):
         self.fail("El servidor no quedo listo en el puerto de integracion")
 
     def _cerrar_servidor(self, process, port):
-        """Cierra el servidor si la prueba falla antes de enviar SALIR."""
-        if process.poll() is not None:
-            return
+        """Cierra el servidor y libera los pipes del proceso."""
+        if process.poll() is None:
+            self._enviar_salir_o_terminar(process, port)
 
+        try:
+            process.communicate(timeout=TIMEOUT)
+        except subprocess.TimeoutExpired:
+            process.kill()
+            process.communicate(timeout=TIMEOUT)
+
+    def _enviar_salir_o_terminar(self, process, port):
+        """Intenta cerrar con SALIR y termina el proceso si no responde."""
         with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
             sock.settimeout(0.2)
             try:
                 sock.sendto("SALIR".encode("utf-8"), (HOST, port))
                 sock.recvfrom(65535)
+                return
             except OSError:
                 process.terminate()
 
@@ -79,15 +95,25 @@ class TestIntegracionIteracion3(unittest.TestCase):
             process.kill()
             process.wait(timeout=TIMEOUT)
 
+    def _esperar_fin_correcto(self, process):
+        """Espera el fin del proceso real y libera sus pipes."""
+        if process.poll() is not None:
+            process.communicate(timeout=TIMEOUT)
+            return
+
+        try:
+            process.communicate(timeout=TIMEOUT)
+        except subprocess.TimeoutExpired:
+            process.kill()
+            process.communicate(timeout=TIMEOUT)
+
     def test_cliente_y_servidor_reales_ejecutan_protocolo_completo(self):
         """
         Iteracion 3 - Integracion.
         Requisito: cliente y servidor reales se comunican por UDP.
         """
         port = self._puerto_libre()
-        server_process = self._arrancar_servidor_real(port)
-        self.addCleanup(self._cerrar_servidor, server_process, port)
-        self._esperar_servidor(server_process, port)
+        server_process = self._crear_servidor_listo(port)
         output = io.StringIO()
         client = UDPInfoClient(
             host=HOST,
@@ -97,7 +123,7 @@ class TestIntegracionIteracion3(unittest.TestCase):
         )
 
         client.run(output=output)
-        server_process.wait(timeout=TIMEOUT)
+        self._esperar_fin_correcto(server_process)
 
         printed = output.getvalue()
         self.assertIn("root", printed)
@@ -111,9 +137,7 @@ class TestIntegracionIteracion3(unittest.TestCase):
         Requisito: el protocolo real responde ERROR ante mensajes invalidos.
         """
         port = self._puerto_libre()
-        server_process = self._arrancar_servidor_real(port)
-        self.addCleanup(self._cerrar_servidor, server_process, port)
-        self._esperar_servidor(server_process, port)
+        server_process = self._crear_servidor_listo(port)
         output = io.StringIO()
         client = UDPInfoClient(
             host=HOST,
@@ -123,7 +147,7 @@ class TestIntegracionIteracion3(unittest.TestCase):
         )
 
         client.run(output=output)
-        server_process.wait(timeout=TIMEOUT)
+        self._esperar_fin_correcto(server_process)
 
         self.assertIn("ERROR", output.getvalue())
         self.assertIn("OK", output.getvalue())

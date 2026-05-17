@@ -24,6 +24,7 @@ class UDPTestServer:
         self.responses = responses
         self.received_messages = []
         self.port = self._free_port()
+        self.ready = threading.Event()
         self.thread = threading.Thread(target=self._run, daemon=True)
 
     def _free_port(self):
@@ -35,6 +36,7 @@ class UDPTestServer:
     def start(self):
         """Arranca el servidor UDP auxiliar."""
         self.thread.start()
+        self.ready.wait(TIMEOUT)
 
     def join(self):
         """Espera a que el servidor auxiliar termine."""
@@ -45,6 +47,7 @@ class UDPTestServer:
         with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
             sock.bind((HOST, self.port))
             sock.settimeout(TIMEOUT)
+            self.ready.set()
 
             for response in self.responses:
                 data, address = sock.recvfrom(65535)
