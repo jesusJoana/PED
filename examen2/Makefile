@@ -20,7 +20,7 @@ server:
 	$(PYTHON) -m src.main
 
 client:
-	@echo "Cliente pendiente de la iteracion 2"
+	$(PYTHON) -m src.main client
 
 clean:
 	find . -type d -name "__pycache__" -exec rm -rf {} +

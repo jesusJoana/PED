@@ -1,0 +1,33 @@
+import socket
+import sys
+
+
+BUFFER_SIZE = 65535
+DEFAULT_MESSAGES = ("NUMERO", "BUSCAR root", "SALIR")
+
+
+class UDPInfoClient:
+    """Cliente UDP que envia mensajes y muestra las respuestas del servidor."""
+
+    def __init__(self, host="127.0.0.1", port=16063, messages=None, timeout=2.0):
+        self.host = host
+        self.port = port
+        self.messages = list(messages) if messages is not None else list(DEFAULT_MESSAGES)
+        self.timeout = timeout
+
+    def run(self, output=None):
+        """Envia los mensajes configurados e imprime cada respuesta recibida."""
+        if output is None:
+            output = sys.stdout
+
+        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
+            sock.settimeout(self.timeout)
+
+            for message in self.messages:
+                try:
+                    sock.sendto(message.encode("utf-8"), (self.host, self.port))
+                    data, _address = sock.recvfrom(BUFFER_SIZE)
+                    print(data.decode("utf-8"), file=output)
+                except OSError:
+                    print("ERROR", file=output)
+                    break
