@@ -2,8 +2,6 @@ PYTHON=python3
 VENV=venv
 PIP=$(VENV)/bin/pip
 PY=$(VENV)/bin/python
-FILE?=$(CURDIR)/fichero.txt
-SOCKET?=/tmp/serv4.sock
 
 .PHONY: install test run server client clean freeze
 
@@ -16,13 +14,13 @@ test:
 	if [ -x "$(PY)" ]; then $(PY) -m unittest discover -s tests -v; else $(PYTHON) -m unittest discover -s tests -v; fi
 
 run:
-	./cli4 $(FILE) --socket $(SOCKET)
+	$(PYTHON) -m src.main
 
 server:
-	./serv4 --socket $(SOCKET)
+	$(PYTHON) -m src.main
 
 client:
-	./cli4 $(FILE) --socket $(SOCKET)
+	@echo "Cliente pendiente de la iteracion 2"
 
 clean:
 	find . -type d -name "__pycache__" -exec rm -rf {} +
