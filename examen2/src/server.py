@@ -27,7 +27,7 @@ class UDPInfoServer:
             while self.running:
                 data, address = sock.recvfrom(BUFFER_SIZE)
                 message = data.decode("utf-8")
-                print(address[0] + " " + message, file=sys.stderr, flush=True)
+                self._log_client_message(address, message)
                 response = self.process_message(message)
                 sock.sendto(response.encode("utf-8"), address)
 
@@ -47,6 +47,10 @@ class UDPInfoServer:
             return self._process_buscar(message[len(BUSCAR_PREFIX) :])
 
         return "ERROR"
+
+    def _log_client_message(self, address, message):
+        """Escribe en stderr la IP del cliente y el mensaje recibido."""
+        print(address[0] + " " + message, file=sys.stderr, flush=True)
 
     def _process_numero(self):
         """Devuelve el numero de busquedas ejecutadas."""
