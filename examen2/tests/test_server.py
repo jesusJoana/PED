@@ -1,3 +1,5 @@
+import contextlib
+import io
 import socket
 import tempfile
 import threading
@@ -111,6 +113,65 @@ class TestServidorIteracion1(unittest.TestCase):
             response,
         )
         self.assertEqual("OK", stop_response)
+        self.assertFalse(thread.is_alive())
+
+    def _wait_until_server_is_ready(self):
+        deadline = time.time() + 2
+        while self.server.bound_port is None and time.time() < deadline:
+            time.sleep(0.01)
+        self.assertIsNotNone(self.server.bound_port)
+
+    def _send_udp_message(self, message):
+        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as client_socket:
+            client_socket.settimeout(2)
+            client_socket.sendto(
+                message.encode("utf-8"),
+                (self.server.host, self.server.bound_port),
+            )
+            data, _ = client_socket.recvfrom(65535)
+        return data.decode("utf-8")
+
+
+class TestServidorIteracion4(unittest.TestCase):
+    """Tests de la Iteración 4 - Servidor modificado."""
+
+    def setUp(self):
+        self.temp_dir = tempfile.TemporaryDirectory()
+        base_path = Path(self.temp_dir.name)
+        self.passwd_path = base_path / "passwd"
+        self.services_path = base_path / "services"
+        self.passwd_path.write_text(
+            "root:x:0:0:root:/root:/bin/bash\n",
+            encoding="utf-8",
+        )
+        self.services_path.write_text("", encoding="utf-8")
+        self.server = UDPTextSearchServer(
+            host="127.0.0.1",
+            port=0,
+            file_paths=[str(self.passwd_path), str(self.services_path)],
+        )
+
+    def tearDown(self):
+        self.server.close()
+        self.temp_dir.cleanup()
+
+    def test_servidor_escribe_ip_y_mensaje_en_error_estandar_por_peticion(self):
+        """Iteración 4. Requisito: registrar en stderr IP cliente y mensaje."""
+        stderr = io.StringIO()
+
+        with contextlib.redirect_stderr(stderr):
+            thread = threading.Thread(target=self.server.serve_forever, daemon=True)
+            thread.start()
+            self._wait_until_server_is_ready()
+
+            self._send_udp_message("BUSCAR root")
+            self._send_udp_message("SALIR")
+            thread.join(timeout=2)
+
+        stderr_output = stderr.getvalue()
+        self.assertIn("127.0.0.1", stderr_output)
+        self.assertIn("BUSCAR root", stderr_output)
+        self.assertIn("SALIR", stderr_output)
         self.assertFalse(thread.is_alive())
 
     def _wait_until_server_is_ready(self):
