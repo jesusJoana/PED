@@ -1,6 +1,11 @@
 import socket
 
 
+BUFFER_SIZE = 65535
+BUSCAR_PREFIX = "BUSCAR "
+SEARCH_FILES = ("/etc/passwd", "/etc/services")
+
+
 class UDPInfoServer:
     """Servidor UDP que responde al protocolo de consulta de frases."""
 
@@ -19,7 +24,7 @@ class UDPInfoServer:
             sock.bind((self.host, self.port))
 
             while self.running:
-                data, address = sock.recvfrom(65535)
+                data, address = sock.recvfrom(BUFFER_SIZE)
                 message = data.decode("utf-8")
                 response = self.process_message(message)
                 sock.sendto(response.encode("utf-8"), address)
@@ -31,24 +36,35 @@ class UDPInfoServer:
     def process_message(self, message):
         """Procesa un mensaje del protocolo y devuelve la respuesta."""
         if message == "NUMERO":
-            return "OK " + str(self.search_count)
+            return self._process_numero()
 
         if message == "SALIR":
-            self.running = False
-            return "OK"
+            return self._process_salir()
 
-        if message.startswith("BUSCAR ") and len(message) > len("BUSCAR "):
-            text = message[len("BUSCAR ") :]
-            self.search_count += 1
-            found_lines = self.search_lines(text)
-            return str(len(found_lines)) + "\n" + "\n".join(found_lines)
+        if message.startswith(BUSCAR_PREFIX) and len(message) > len(BUSCAR_PREFIX):
+            return self._process_buscar(message[len(BUSCAR_PREFIX) :])
 
         return "ERROR"
+
+    def _process_numero(self):
+        """Devuelve el numero de busquedas ejecutadas."""
+        return "OK " + str(self.search_count)
+
+    def _process_salir(self):
+        """Marca el servidor para finalizar tras responder."""
+        self.running = False
+        return "OK"
+
+    def _process_buscar(self, text):
+        """Ejecuta una busqueda y construye la respuesta del protocolo."""
+        self.search_count += 1
+        found_lines = self.search_lines(text)
+        return str(len(found_lines)) + "\n" + "\n".join(found_lines)
 
     def search_lines(self, text):
         """Busca el texto indicado en los ficheros conocidos por el servidor."""
         found = []
-        for path in ("/etc/passwd", "/etc/services"):
+        for path in SEARCH_FILES:
             with open(path, "r", encoding="utf-8", errors="replace") as file:
                 for line in file:
                     clean_line = line.rstrip("\n")
