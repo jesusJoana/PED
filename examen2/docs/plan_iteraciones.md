@@ -10,9 +10,10 @@ general de iteraciones del contrato. Para este proyecto, el flujo será:
 
 1. Iteración 1 - Servidor.
 2. Iteración 2 - Cliente.
-3. Iteración 3 - Servidor modificado.
-4. Iteración 4 - Cliente modificado.
-5. Iteración 5 - README.
+3. Iteración 3 - Integración cliente-servidor.
+4. Iteración 4 - Servidor modificado.
+5. Iteración 5 - Cliente modificado.
+6. Iteración 6 - README.
 
 Cada iteración con desarrollo de código tendrá entregas separadas:
 
@@ -193,9 +194,37 @@ respuestas en salida estándar y termine tras el último mensaje.
 - `src/client.py`
 - `src/main.py`
 - `tests/test_client.py`
-- `tests/test_integracion.py`, si se valida colaboración real cliente-servidor.
 
-## Iteración 3 - Servidor modificado
+## Iteración 3 - Integración cliente-servidor
+
+### Objetivo
+
+Validar la colaboración extremo a extremo entre el cliente real y el servidor
+real usando UDP.
+
+### Entregas
+
+- `Test 3 Integración`: pruebas de integración en rojo.
+- `Test 3 Integración OK`: implementación mínima para dejar en verde las pruebas
+  de integración y todos los tests acumulados.
+- `Refactor 3 Integración`: refactorización posterior y separada, si aporta valor.
+
+### Pruebas previstas
+
+- El servidor real se levanta en un hilo de prueba con UDP real.
+- El cliente real envía mensajes al servidor real.
+- El cliente imprime en salida estándar las respuestas reales del servidor.
+- El flujo incluye al menos `NUMERO`, `BUSCAR <cadena>` y `SALIR`.
+- El servidor termina correctamente al recibir `SALIR`.
+- Los tests unitarios acumulados siguen pasando.
+
+### Archivos afectados
+
+- `tests/test_integracion.py`
+- `src/client.py`, solo si fuera necesario ajustar comportamiento observado.
+- `src/server.py`, solo si fuera necesario ajustar comportamiento observado.
+
+## Iteración 4 - Servidor modificado
 
 ### Objetivo
 
@@ -209,9 +238,9 @@ La línea deberá incluir:
 
 ### Entregas
 
-- `Test 3 Servidor`: pruebas del servidor modificado en rojo.
-- `Test 3 Servidor OK`: implementación mínima para dejar en verde las pruebas.
-- `Refactor 3 Servidor`: refactorización posterior y separada, si aporta valor.
+- `Test 4 Servidor`: pruebas del servidor modificado en rojo.
+- `Test 4 Servidor OK`: implementación mínima para dejar en verde las pruebas.
+- `Refactor 4 Servidor`: refactorización posterior y separada, si aporta valor.
 
 ### Pruebas previstas
 
@@ -227,7 +256,7 @@ La línea deberá incluir:
 - `tests/test_server.py`
 - `tests/test_integracion.py`, si se valida con servidor real.
 
-## Iteración 4 - Cliente modificado
+## Iteración 5 - Cliente modificado
 
 ### Objetivo
 
@@ -242,9 +271,9 @@ host:puerto
 
 ### Entregas
 
-- `Test 4 Cliente`: pruebas del cliente modificado en rojo.
-- `Test 4 Cliente OK`: implementación mínima para dejar en verde las pruebas.
-- `Refactor 4 Cliente`: refactorización posterior y separada, si aporta valor.
+- `Test 5 Cliente`: pruebas del cliente modificado en rojo.
+- `Test 5 Cliente OK`: implementación mínima para dejar en verde las pruebas.
+- `Refactor 5 Cliente`: refactorización posterior y separada, si aporta valor.
 
 ### Pruebas previstas
 
@@ -262,7 +291,7 @@ host:puerto
 - `tests/test_client.py`
 - `tests/test_integracion.py`, si se valida con servidor real.
 
-## Iteración 5 - README
+## Iteración 6 - README
 
 ### Objetivo
 
@@ -296,4 +325,3 @@ No se aplicará TDD en esta iteración.
 - preparación del entorno;
 - comandos de ejecución;
 - pasos necesarios para poner el sistema en funcionamiento.
-
