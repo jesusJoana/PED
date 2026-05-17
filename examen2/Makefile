@@ -3,29 +3,30 @@ VENV=venv
 PIP=$(VENV)/bin/pip
 PY=$(VENV)/bin/python
 FILE?=$(CURDIR)/fichero.txt
+SOCKET?=/tmp/serv4.sock
 
 .PHONY: install test run server client clean freeze
 
 install:
-	@$(PYTHON) -m venv $(VENV)
-	@$(PIP) install --upgrade pip
-	@if [ -f requirements.txt ]; then $(PIP) install -r requirements.txt; fi
+	$(PYTHON) -m venv $(VENV)
+	$(PIP) install --upgrade pip
+	if [ -f requirements.txt ]; then $(PIP) install -r requirements.txt; fi
 
 test:
-	@PYTHONPATH=$(CURDIR) $(PY) -m unittest discover -s tests -v
+	if [ -x "$(PY)" ]; then $(PY) -m unittest discover -s tests -v; else $(PYTHON) -m unittest discover -s tests -v; fi
 
 run:
-	@PYTHONPATH=$(CURDIR) $(PY) src/main.py client
+	./cli4 $(FILE) --socket $(SOCKET)
 
 server:
-	@PYTHONPATH=$(CURDIR) $(PY) src/main.py server
+	./serv4 --socket $(SOCKET)
 
 client:
-	@PYTHONPATH=$(CURDIR) $(PY) src/main.py client
+	./cli4 $(FILE) --socket $(SOCKET)
 
 clean:
-	@find . -type d -name "__pycache__" -exec rm -rf {} +
-	@find . -type f -name "*.pyc" -delete
+	find . -type d -name "__pycache__" -exec rm -rf {} +
+	find . -type f -name "*.pyc" -delete
 
 freeze:
-	@$(PIP) freeze > requirements.txt
+	$(PIP) freeze > requirements.txt

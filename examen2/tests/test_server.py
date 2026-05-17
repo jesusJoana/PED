@@ -1,194 +1,130 @@
-import contextlib
-import io
+import os
 import socket
-import tempfile
+import sys
 import threading
 import time
 import unittest
-from pathlib import Path
 
 
-from src.server import UDPTextSearchServer
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+if PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, PROJECT_ROOT)
+
+from src.server import UDPInfoServer
+
+
+HOST = "127.0.0.1"
+TIMEOUT = 2.0
 
 
 class TestServidorIteracion1(unittest.TestCase):
-    """Tests de la Iteración 1 - Servidor."""
+    """Iteracion 1: pruebas unitarias del servidor UDP."""
 
-    def setUp(self):
-        """Prepara ficheros temporales conocidos por el servidor bajo prueba."""
-        self.temp_dir = tempfile.TemporaryDirectory()
-        base_path = Path(self.temp_dir.name)
+    def _puerto_libre(self):
+        """Obtiene un puerto local libre para evitar conflictos entre pruebas."""
+        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
+            sock.bind((HOST, 0))
+            return sock.getsockname()[1]
 
-        self.passwd_path = base_path / "passwd"
-        self.services_path = base_path / "services"
-
-        self.passwd_path.write_text(
-            "root:x:0:0:root:/root:/bin/bash\n"
-            "daemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin\n"
-            "usuario:x:1000:1000:Usuario:/home/usuario:/bin/bash\n",
-            encoding="utf-8",
+    def _arrancar_servidor(self, max_messages=1):
+        """Arranca el servidor en un hilo para probar UDP real sin bloquear."""
+        port = self._puerto_libre()
+        server = UDPInfoServer(host=HOST, port=port)
+        thread = threading.Thread(
+            target=server.run,
+            kwargs={"max_messages": max_messages},
+            daemon=True,
         )
-        self.services_path.write_text(
-            "http 80/tcp www\n"
-            "xmlrpc-beep 602/tcp # XML-RPC over BEEP\n"
-            "xmlrpc-beep 602/udp # XML-RPC over BEEP\n",
-            encoding="utf-8",
-        )
+        thread.start()
+        time.sleep(0.1)
+        return server, thread, port
 
-        self.server = UDPTextSearchServer(
-            host="127.0.0.1",
-            port=0,
-            file_paths=[str(self.passwd_path), str(self.services_path)],
-        )
+    def _enviar_mensaje(self, port, message):
+        """Envia un datagrama UDP y devuelve la respuesta decodificada."""
+        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
+            sock.settimeout(TIMEOUT)
+            sock.sendto(message.encode("utf-8"), (HOST, port))
+            data, _ = sock.recvfrom(65535)
+            return data.decode("utf-8")
 
-    def tearDown(self):
-        self.server.close()
-        self.temp_dir.cleanup()
-
-    def test_buscar_devuelve_numero_y_lineas_encontradas(self):
-        """Iteración 1. Requisito: BUSCAR devuelve RESULTADO n y líneas completas."""
-        response = self.server.handle_message("BUSCAR xmlrpc")
-
-        self.assertEqual(
-            "RESULTADO 2\n"
-            "xmlrpc-beep 602/tcp # XML-RPC over BEEP\n"
-            "xmlrpc-beep 602/udp # XML-RPC over BEEP",
-            response,
-        )
-
-    def test_buscar_sin_resultados_devuelve_resultado_cero(self):
-        """Iteración 1. Requisito: BUSCAR sin coincidencias devuelve RESULTADO 0."""
-        response = self.server.handle_message("BUSCAR no encontrado")
-
-        self.assertEqual("RESULTADO 0", response)
-
-    def test_buscar_distingue_mayusculas_y_minusculas(self):
-        """Iteración 1. Requisito: la búsqueda es sensible a mayúsculas."""
-        response = self.server.handle_message("BUSCAR usuario")
-
-        self.assertEqual(
-            "RESULTADO 1\nusuario:x:1000:1000:Usuario:/home/usuario:/bin/bash",
-            response,
-        )
-
-    def test_buscar_mal_formateado_devuelve_error(self):
-        """Iteración 1. Requisito: BUSCAR sin cadena devuelve ERROR."""
-        self.assertEqual("ERROR", self.server.handle_message("BUSCAR"))
-        self.assertEqual("ERROR", self.server.handle_message("BUSCAR   "))
-
-    def test_numero_devuelve_busquedas_ejecutadas_correctamente(self):
-        """Iteración 1. Requisito: NUMERO devuelve el contador de búsquedas."""
-        self.server.handle_message("BUSCAR root")
-        self.server.handle_message("BUSCAR xmlrpc")
-
-        self.assertEqual("OK 2", self.server.handle_message("NUMERO"))
-
-    def test_salir_devuelve_ok_y_solicita_detener_servidor(self):
-        """Iteración 1. Requisito: SALIR responde OK y detiene el servidor."""
-        self.assertFalse(self.server.should_stop)
-
-        response = self.server.handle_message("SALIR")
-
-        self.assertEqual("OK", response)
-        self.assertTrue(self.server.should_stop)
+    def _lineas_esperadas(self, text):
+        """Calcula las lineas esperadas siguiendo el orden del enunciado."""
+        found = []
+        for path in ("/etc/passwd", "/etc/services"):
+            with open(path, "r", encoding="utf-8", errors="replace") as file:
+                for line in file:
+                    clean_line = line.rstrip("\n")
+                    if text in clean_line:
+                        found.append(clean_line)
+        return found
 
     def test_mensaje_desconocido_devuelve_error(self):
-        """Iteración 1. Requisito: cualquier mensaje inválido devuelve ERROR."""
-        self.assertEqual("ERROR", self.server.handle_message("HOLA"))
-        self.assertEqual("ERROR", self.server.handle_message("numero"))
-        self.assertEqual("ERROR", self.server.handle_message(""))
+        """
+        Iteracion 1 - Servidor.
+        Requisito: cualquier mensaje desconocido debe responder ERROR.
+        """
+        _server, thread, port = self._arrancar_servidor(max_messages=1)
 
-    def test_servidor_responde_por_udp_real(self):
-        """Iteración 1. Requisito: el servidor acepta peticiones UDP reales."""
-        thread = threading.Thread(target=self.server.serve_forever, daemon=True)
-        thread.start()
-        self._wait_until_server_is_ready()
+        response = self._enviar_mensaje(port, "HOLA")
 
-        response = self._send_udp_message("BUSCAR root")
-        stop_response = self._send_udp_message("SALIR")
-        thread.join(timeout=2)
-
-        self.assertEqual(
-            "RESULTADO 1\nroot:x:0:0:root:/root:/bin/bash",
-            response,
-        )
-        self.assertEqual("OK", stop_response)
+        self.assertEqual("ERROR", response)
+        thread.join(TIMEOUT)
         self.assertFalse(thread.is_alive())
 
-    def _wait_until_server_is_ready(self):
-        deadline = time.time() + 2
-        while self.server.bound_port is None and time.time() < deadline:
-            time.sleep(0.01)
-        self.assertIsNotNone(self.server.bound_port)
+    def test_numero_inicial_devuelve_ok_cero(self):
+        """
+        Iteracion 1 - Servidor.
+        Requisito: NUMERO devuelve OK y el numero de busquedas ejecutadas.
+        """
+        _server, thread, port = self._arrancar_servidor(max_messages=1)
 
-    def _send_udp_message(self, message):
-        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as client_socket:
-            client_socket.settimeout(2)
-            client_socket.sendto(
-                message.encode("utf-8"),
-                (self.server.host, self.server.bound_port),
-            )
-            data, _ = client_socket.recvfrom(65535)
-        return data.decode("utf-8")
+        response = self._enviar_mensaje(port, "NUMERO")
 
-
-class TestServidorIteracion4(unittest.TestCase):
-    """Tests de la Iteración 4 - Servidor modificado."""
-
-    def setUp(self):
-        self.temp_dir = tempfile.TemporaryDirectory()
-        base_path = Path(self.temp_dir.name)
-        self.passwd_path = base_path / "passwd"
-        self.services_path = base_path / "services"
-        self.passwd_path.write_text(
-            "root:x:0:0:root:/root:/bin/bash\n",
-            encoding="utf-8",
-        )
-        self.services_path.write_text("", encoding="utf-8")
-        self.server = UDPTextSearchServer(
-            host="127.0.0.1",
-            port=0,
-            file_paths=[str(self.passwd_path), str(self.services_path)],
-        )
-
-    def tearDown(self):
-        self.server.close()
-        self.temp_dir.cleanup()
-
-    def test_servidor_escribe_ip_y_mensaje_en_error_estandar_por_peticion(self):
-        """Iteración 4. Requisito: registrar en stderr IP cliente y mensaje."""
-        stderr = io.StringIO()
-
-        with contextlib.redirect_stderr(stderr):
-            thread = threading.Thread(target=self.server.serve_forever, daemon=True)
-            thread.start()
-            self._wait_until_server_is_ready()
-
-            self._send_udp_message("BUSCAR root")
-            self._send_udp_message("SALIR")
-            thread.join(timeout=2)
-
-        stderr_output = stderr.getvalue()
-        self.assertIn("127.0.0.1", stderr_output)
-        self.assertIn("BUSCAR root", stderr_output)
-        self.assertIn("SALIR", stderr_output)
+        self.assertEqual("OK 0", response)
+        thread.join(TIMEOUT)
         self.assertFalse(thread.is_alive())
 
-    def _wait_until_server_is_ready(self):
-        deadline = time.time() + 2
-        while self.server.bound_port is None and time.time() < deadline:
-            time.sleep(0.01)
-        self.assertIsNotNone(self.server.bound_port)
+    def test_buscar_devuelve_numero_y_lineas_encontradas(self):
+        """
+        Iteracion 1 - Servidor.
+        Requisito: BUSCAR busca en /etc/passwd y /etc/services.
+        """
+        expected_lines = self._lineas_esperadas("root")
+        expected_response = str(len(expected_lines)) + "\n" + "\n".join(expected_lines)
+        _server, thread, port = self._arrancar_servidor(max_messages=1)
 
-    def _send_udp_message(self, message):
-        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as client_socket:
-            client_socket.settimeout(2)
-            client_socket.sendto(
-                message.encode("utf-8"),
-                (self.server.host, self.server.bound_port),
-            )
-            data, _ = client_socket.recvfrom(65535)
-        return data.decode("utf-8")
+        response = self._enviar_mensaje(port, "BUSCAR root")
+
+        self.assertEqual(expected_response, response)
+        thread.join(TIMEOUT)
+        self.assertFalse(thread.is_alive())
+
+    def test_buscar_incrementa_contador_de_busquedas(self):
+        """
+        Iteracion 1 - Servidor.
+        Requisito: NUMERO refleja las busquedas ejecutadas con BUSCAR.
+        """
+        _server, thread, port = self._arrancar_servidor(max_messages=2)
+
+        self._enviar_mensaje(port, "BUSCAR root")
+        response = self._enviar_mensaje(port, "NUMERO")
+
+        self.assertEqual("OK 1", response)
+        thread.join(TIMEOUT)
+        self.assertFalse(thread.is_alive())
+
+    def test_salir_devuelve_ok_y_termina_servidor(self):
+        """
+        Iteracion 1 - Servidor.
+        Requisito: SALIR responde OK y termina la ejecucion del servidor.
+        """
+        _server, thread, port = self._arrancar_servidor(max_messages=None)
+
+        response = self._enviar_mensaje(port, "SALIR")
+
+        self.assertEqual("OK", response)
+        thread.join(TIMEOUT)
+        self.assertFalse(thread.is_alive())
 
 
 if __name__ == "__main__":

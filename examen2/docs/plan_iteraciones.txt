@@ -1,0 +1,433 @@
+PLAN DE ITERACIONES - EXAMEN2
+=============================
+
+Objetivo general
+----------------
+
+Implementar un sistema cliente-servidor UDP en Python, siguiendo el contrato de
+trabajo PED y el ciclo TDD pragmático:
+
+RED -> GREEN -> REFACTOR
+
+Cada entrega se realizará de forma separada para que pueda ser verificada y
+subida individualmente por el alumno.
+
+Tecnología y estructura prevista
+--------------------------------
+
+- Lenguaje: Python 3.
+- Paradigma: Programación Orientada a Objetos.
+- Testing: unittest.
+- Comunicación: sockets UDP reales.
+- Host por defecto: 127.0.0.1.
+- Puerto por defecto: 16063.
+- Código fuente: src/.
+- Tests: tests/.
+- Documentación final: README.txt e INSTALL.txt.
+- Ejecución: mediante make.
+
+Protocolo funcional
+-------------------
+
+Mensajes cliente -> servidor, codificados en UTF-8:
+
+- BUSCAR <cadena>
+- NUMERO
+- SALIR
+
+Respuestas servidor -> cliente:
+
+- BUSCAR <cadena>:
+  devuelve el número de líneas encontradas, un salto de línea y las líneas
+  completas encontradas en /etc/passwd y /etc/services.
+
+- NUMERO:
+  devuelve una línea con OK y el número de búsquedas ejecutadas.
+
+- SALIR:
+  devuelve OK y finaliza el servidor.
+
+- Cualquier otro mensaje:
+  devuelve ERROR.
+
+
+ITERACION 1 - SERVIDOR
+======================
+
+Objetivo
+--------
+
+Crear el servidor UDP básico, capaz de ejecutarse continuamente, recibir
+mensajes de cualquier cliente y responder según el protocolo.
+
+Archivos previstos
+------------------
+
+- src/server.py
+- src/main.py
+- tests/test_server.py
+- Makefile
+
+Entrega 1.1 - Test 1 Servidor
+-----------------------------
+
+Estado esperado: RED.
+
+Contenido:
+
+- Crear tests unitarios del servidor en tests/test_server.py.
+- Los tests usarán UDP real con timeouts para evitar bloqueos.
+- Los tests documentarán que pertenecen a la Iteración 1.
+
+Pruebas previstas:
+
+- El servidor responde ERROR ante un mensaje no reconocido.
+- El servidor responde correctamente a NUMERO antes de hacer búsquedas.
+- El servidor responde a BUSCAR <cadena> con número de líneas y contenido.
+- El servidor incrementa el contador de búsquedas tras BUSCAR.
+- El servidor responde OK a SALIR.
+
+Entrega 1.2 - Test 1 Servidor OK
+--------------------------------
+
+Estado esperado: GREEN.
+
+Contenido:
+
+- Implementación mínima de la clase servidor.
+- Apertura de socket UDP.
+- Bucle de recepción limitado en tests y continuo en ejecución normal.
+- Procesamiento mínimo del protocolo.
+- Lectura directa de /etc/passwd y /etc/services.
+- Contador de búsquedas.
+
+No se implementará todavía:
+
+- Cliente real.
+- Tests de integración.
+- Registro por stderr de clientes.
+- Pregunta interactiva de dirección del servidor.
+
+Entrega 1.3 - Refactor 1 Servidor
+---------------------------------
+
+Estado esperado: GREEN.
+
+REFACTOR OBLIGATORIO: SI.
+
+Motivo:
+
+Esta será la primera refactorización obligatoria del proyecto. Servirá para
+separar la lógica de protocolo de la lógica de socket sin cambiar el
+comportamiento observable.
+
+Cambios previstos:
+
+- Extraer métodos privados para procesar BUSCAR, NUMERO, SALIR y ERROR.
+- Mejorar nombres de variables y constantes.
+- Mantener todos los tests de servidor en verde.
+
+
+ITERACION 2 - CLIENTE
+=====================
+
+Objetivo
+--------
+
+Crear el cliente UDP básico. El cliente enviará automáticamente un mínimo de
+tres mensajes al servidor, imprimirá las respuestas recibidas por salida
+standard y terminará.
+
+Archivos previstos
+------------------
+
+- src/client.py
+- src/main.py
+- tests/test_client.py
+- Makefile
+
+Entrega 2.1 - Test 2 Cliente
+----------------------------
+
+Estado esperado: RED.
+
+Contenido:
+
+- Crear tests unitarios del cliente en tests/test_client.py.
+- Los tests usarán un servidor UDP auxiliar de prueba.
+- Los tests documentarán que pertenecen a la Iteración 2.
+
+Pruebas previstas:
+
+- El cliente envía al menos tres mensajes.
+- El cliente imprime por stdout las respuestas recibidas.
+- El cliente termina tras procesar el último mensaje.
+- El cliente informa de error si no recibe respuesta dentro del timeout.
+
+Entrega 2.2 - Test 2 Cliente OK
+-------------------------------
+
+Estado esperado: GREEN.
+
+Contenido:
+
+- Implementación mínima de la clase cliente.
+- Envío UDP de una lista de mensajes predefinida.
+- Recepción de respuestas.
+- Impresión por stdout.
+- Gestión simple de timeout.
+
+No se implementará todavía:
+
+- Pregunta interactiva por dirección completa del servidor.
+- Integración real con el servidor final.
+
+Entrega 2.3 - Refactor 2 Cliente
+--------------------------------
+
+Estado esperado: GREEN.
+
+REFACTOR PREVISTO: SI, si aporta claridad.
+
+Cambios posibles:
+
+- Separar creación de socket, envío de mensaje y recepción de respuesta.
+- Mejorar nombres y constantes de timeout.
+- Mantener todos los tests acumulados en verde.
+
+
+ITERACION 3 - INTEGRACION CLIENTE-SERVIDOR
+==========================================
+
+Objetivo
+--------
+
+Validar comunicación real entre cliente y servidor usando procesos o hilos
+reales y sockets UDP reales.
+
+Archivos previstos
+------------------
+
+- tests/test_integracion.py
+- src/client.py
+- src/server.py
+- Makefile
+
+Entrega 3.1 - Test 3 Integracion
+--------------------------------
+
+Estado esperado: RED.
+
+Contenido:
+
+- Crear tests de integración en tests/test_integracion.py.
+- Los tests documentarán que pertenecen a la Iteración 3.
+
+Pruebas previstas:
+
+- Cliente y servidor se comunican mediante UDP real.
+- BUSCAR devuelve una respuesta con formato válido.
+- NUMERO refleja las búsquedas realizadas.
+- SALIR permite cerrar el servidor limpiamente.
+
+Entrega 3.2 - Test 3 Integracion OK
+-----------------------------------
+
+Estado esperado: GREEN.
+
+Contenido:
+
+- Ajustes mínimos para que cliente y servidor colaboren correctamente.
+- Asegurar arranque y parada controlada del servidor en pruebas.
+- Mantener todos los tests acumulados en verde.
+
+Entrega 3.3 - Refactor 3 Integracion
+------------------------------------
+
+Estado esperado: GREEN.
+
+REFACTOR PREVISTO: SI, si hay duplicidad entre tests.
+
+Cambios posibles:
+
+- Extraer helpers de test para arrancar y parar servidores UDP.
+- Limpiar duplicidades sin alterar comportamiento.
+
+
+ITERACION 4 - SERVIDOR MODIFICADO
+=================================
+
+Objetivo
+--------
+
+Modificar el servidor para imprimir por error standard una línea cada vez que
+reciba un mensaje de un cliente. La línea contendrá la IP del cliente y el
+mensaje recibido.
+
+Archivos previstos
+------------------
+
+- src/server.py
+- tests/test_server.py
+
+Entrega 4.1 - Test 4 Servidor Log Stderr
+----------------------------------------
+
+Estado esperado: RED.
+
+Contenido:
+
+- Añadir tests de servidor para capturar stderr.
+- Documentar que pertenecen a la Iteración 4.
+
+Pruebas previstas:
+
+- Al recibir un datagrama, el servidor escribe en stderr la IP del cliente.
+- La línea escrita en stderr contiene también el mensaje recibido.
+
+Entrega 4.2 - Test 4 Servidor Log Stderr OK
+-------------------------------------------
+
+Estado esperado: GREEN.
+
+Contenido:
+
+- Implementación mínima del registro por stderr.
+- Mantener intacto el protocolo de respuestas.
+
+Entrega 4.3 - Refactor 4 Servidor
+---------------------------------
+
+Estado esperado: GREEN.
+
+REFACTOR PREVISTO: SI.
+
+Cambios posibles:
+
+- Extraer un método de registro de clientes.
+- Facilitar pruebas mediante inyección sencilla del flujo stderr.
+
+
+ITERACION 5 - CLIENTE MEJORADO
+==============================
+
+Objetivo
+--------
+
+Modificar el cliente para que pregunte al usuario por la dirección completa del
+servidor e imprima un error si no consigue comunicarse con él.
+
+Archivos previstos
+------------------
+
+- src/client.py
+- src/main.py
+- tests/test_client.py
+
+Entrega 5.1 - Test 5 Cliente Interactivo
+----------------------------------------
+
+Estado esperado: RED.
+
+Contenido:
+
+- Añadir tests del cliente interactivo.
+- Documentar que pertenecen a la Iteración 5.
+
+Pruebas previstas:
+
+- El cliente solicita al usuario la dirección completa del servidor.
+- El cliente interpreta host y puerto introducidos por el usuario.
+- El cliente imprime ERROR si no consigue recibir respuesta del servidor.
+
+Entrega 5.2 - Test 5 Cliente Interactivo OK
+-------------------------------------------
+
+Estado esperado: GREEN.
+
+Contenido:
+
+- Implementación mínima de lectura de dirección.
+- Conversión de host y puerto.
+- Mensaje de error ante timeout o fallo de comunicación.
+
+Entrega 5.3 - Refactor 5 Cliente
+--------------------------------
+
+Estado esperado: GREEN.
+
+REFACTOR PREVISTO: SI, si la entrada interactiva deja código duplicado.
+
+Cambios posibles:
+
+- Extraer parseo de dirección a un método.
+- Reutilizar el flujo de envío ya probado.
+
+
+ITERACION 6 - DOCUMENTACION
+===========================
+
+Objetivo
+--------
+
+Crear la documentación final exigida por el contrato.
+
+Archivos previstos
+------------------
+
+- README.txt
+- INSTALL.txt
+
+Entrega 6.1 - Test/Revision Documentacion
+-----------------------------------------
+
+Estado esperado: revisión documental.
+
+Contenido:
+
+- Verificar que existen README.txt e INSTALL.txt.
+- Verificar que README.txt describe el proyecto, uso, ejemplos y funcionalidad.
+- Verificar que INSTALL.txt describe instalación, entorno, dependencias y
+  comandos de ejecución.
+
+Entrega 6.2 - Documentacion OK
+------------------------------
+
+Estado esperado: documentación completa.
+
+Contenido:
+
+- Redactar README.txt.
+- Redactar INSTALL.txt.
+
+Entrega 6.3 - Refactor Documentacion
+------------------------------------
+
+Estado esperado: documentación revisada.
+
+REFACTOR PREVISTO: opcional.
+
+Cambios posibles:
+
+- Simplificar redacción.
+- Alinear ejemplos con los comandos reales del Makefile.
+
+
+Resumen de refactorizaciones
+============================
+
+Refactor obligatorio confirmado:
+
+- Refactor 1 Servidor.
+
+Refactorizaciones previstas si aportan valor:
+
+- Refactor 2 Cliente.
+- Refactor 3 Integracion.
+- Refactor 4 Servidor.
+- Refactor 5 Cliente.
+- Refactor Documentacion.
+
+La refactorización obligatoria no añadirá funcionalidad nueva ni modificará
+tests. Se hará únicamente después de tener en verde la entrega
+Test 1 Servidor OK.
