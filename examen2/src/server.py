@@ -1,4 +1,5 @@
 import socket
+import sys
 
 
 BUFFER_SIZE = 65535
@@ -26,6 +27,7 @@ class UDPInfoServer:
             while self.running:
                 data, address = sock.recvfrom(BUFFER_SIZE)
                 message = data.decode("utf-8")
+                print(address[0] + " " + message, file=sys.stderr, flush=True)
                 response = self.process_message(message)
                 sock.sendto(response.encode("utf-8"), address)
 
