@@ -6,7 +6,15 @@
 
 Este protocolo de trabajo será aplicable a cualquier desarrollo realizado junto al asistente, salvo que el usuario indique explícitamente lo contrario.
 
-Los requisitos funcionales, técnicos y específicos de cada práctica, proyecto o ejercicio se definirán al inicio del chat correspondiente y tendrán prioridad sobre cualquier criterio genérico descrito en este documento.
+Los requisitos funcionales, técnicos y específicos del sistema de cada práctica,
+proyecto o ejercicio los detallará el usuario al inicio del chat en el que se
+establezca dicho proyecto.
+
+Esos requisitos específicos deberán quedar definidos antes de plantear cualquier
+iteración, entrega, plan TDD o estructura de implementación.
+
+Los requisitos específicos indicados por el usuario tendrán prioridad sobre
+cualquier criterio genérico descrito en este documento.
 
 ## Rol del asistente
 
@@ -27,18 +35,20 @@ El objetivo principal será maximizar:
 
 Antes de implementar, modificar o eliminar código, el asistente **deberá**:
 
-1. Analizar los requerimientos de la practica o proyecto completo.
-2. Proponer una solución técnica de alto nivel.
-3. Definir:
+1. Recoger y confirmar los requisitos específicos del sistema indicados por el
+   usuario al inicio del chat del proyecto.
+2. Analizar los requerimientos de la practica o proyecto completo.
+3. Proponer una solución técnica de alto nivel.
+4. Definir:
    - Iteraciones más adecuadas para implementar el proyecto
    - objetivo de la iteración,
    - pruebas que se introducirán en cada iteración,
    - archivos afectados,
    - estrategia de implementación,
    - y posibles dependencias o riesgos.
-4. Solicitar confirmación explícita del usuario antes de generar código.
-5. El asistente tiene permiso para crear tanto el contenido de los archivos como de la estructura de archivos para el proyecto (como mínimo habrá una carpeta para código fuente "src" y otra parea tests "tests").
-6. Los tests estarán documentados de tal forma que aparte de indicar qué requisitos prueban, indicarán también la iteración que están probando.
+5. Solicitar confirmación explícita del usuario antes de generar código.
+6. El asistente tiene permiso para crear tanto el contenido de los archivos como de la estructura de archivos para el proyecto (como mínimo habrá una carpeta para código fuente "src" y otra parea tests "tests").
+7. Los tests estarán documentados de tal forma que aparte de indicar qué requisitos prueban, indicarán también la iteración que están probando.
 
 No se realizarán cambios arquitectónicos importantes sin aprobación previa del usuario.
 
@@ -181,6 +191,55 @@ integración:
 Las pruebas unitarias y las pruebas de integración no se mezclarán en una misma
 entrega salvo autorización explícita del usuario.
 
+### Flujo obligatorio de iteraciones y entregas en cliente-servidor
+
+En prácticas o exámenes con arquitectura cliente-servidor, salvo que el usuario
+indique expresamente lo contrario en el chat, las iteraciones y entregas se
+ajustarán siempre al esquema definido en esta sección.
+
+Este esquema solo podrá modificarse cuando el usuario lo pida de forma explícita
+en el chat. No se modificará por iniciativa del asistente ni por conveniencia
+técnica sin esa indicación expresa.
+
+El plan de iteraciones seguirá este orden:
+
+1. **Iteración 1: Servidor**
+   - Implementación de la funcionalidad requerida del servidor.
+   - Pruebas unitarias del servidor en `tests/test_server.py`.
+   - Entregas asociadas:
+     - `Test 1 Servidor`: pruebas del servidor en rojo.
+     - `Test 1 Servidor OK`: implementación mínima del servidor en verde.
+     - `Refactor 1 Servidor`: refactorización opcional sin cambio de comportamiento.
+
+2. **Iteración 2: Cliente**
+   - Implementación de la funcionalidad requerida del cliente.
+   - Pruebas unitarias del cliente en `tests/test_client.py`.
+   - Entregas asociadas:
+     - `Test 2 Cliente`: pruebas del cliente en rojo.
+     - `Test 2 Cliente OK`: implementación mínima del cliente en verde.
+     - `Refactor 2 Cliente`: refactorización opcional sin cambio de comportamiento.
+
+3. **Iteración 3: Integración cliente-servidor**
+   - Implementación y validación del flujo completo entre cliente y servidor.
+   - Pruebas de integración en `tests/test_integracion.py`.
+   - Entregas asociadas:
+     - `Test 3 Integración`: pruebas de integración en rojo.
+     - `Test 3 Integración OK`: implementación mínima para dejar en verde la integración y todos los tests acumulados.
+     - `Refactor 3 Integración`: refactorización opcional sin cambio de comportamiento.
+
+Cada iteración tendrá siempre dos o tres entregas:
+
+- una entrega de pruebas en rojo (**RED**);
+- una entrega de implementación mínima con pruebas en verde (**GREEN**);
+- y, cuando aporte valor, una entrega de refactorización (**REFACTOR**).
+
+Estas entregas serán siempre entregas distintas y secuenciales. La
+refactorización, si se realiza, será una entrega posterior a `Test n <ámbito>
+OK` y no formará parte de la entrega de implementación en verde.
+
+La entrega de refactorización podrá omitirse únicamente cuando no haya mejora
+interna razonable que realizar. En ese caso deberá indicarse explícitamente.
+
 ### Definición pragmática de prueba unitaria en ejercicios IPC
 
 En el contexto de examen de esta asignatura, cuando el ejercicio trate sobre
@@ -232,26 +291,27 @@ Los tests unitarios que usen IPC real deberán diseñarse para no bloquear:
 - cerrarán correctamente sockets, descriptores, FIFOs, pipes y procesos creados
   durante la prueba.
 
-El orden de trabajo será:
+El orden de trabajo en prácticas cliente-servidor será:
 
-1. Primero se desarrollará el ciclo TDD de pruebas unitarias.
-2. Cuando las pruebas unitarias previstas estén en verde, se desarrollará el
-   ciclo TDD de pruebas de integración.
+1. Primero se desarrollará el ciclo TDD del servidor.
+2. Después se desarrollará el ciclo TDD del cliente.
+3. Finalmente se desarrollará el ciclo TDD de integración cliente-servidor.
 
-Para cada iteración de pruebas unitarias se prepararán entregas separadas:
+Para cada iteración se prepararán entregas separadas:
 
-- una primera entrega `Test n Unitario` en rojo, con las pruebas unitarias que
+- una primera entrega `Test n <ámbito>` en rojo, con las pruebas que
   correspondan a esa iteración;
-- una segunda entrega `Test n OK` en verde, con la implementación mínima para
-  hacer pasar todas las pruebas unitarias introducidas en `Test n Unitario`.
+- una segunda entrega `Test n <ámbito> OK` en verde, con la implementación
+  mínima para hacer pasar todas las pruebas introducidas en la entrega anterior;
+- una tercera entrega `Refactor n <ámbito>` cuando sea útil mejorar la calidad
+  interna sin cambiar el comportamiento observable.
 
-Después, para cada iteración de integración se prepararán entregas separadas:
+La tercera entrega, cuando exista, se realizará siempre después de haber cerrado
+la entrega `Test n <ámbito> OK`. No se mezclará código de refactorización dentro
+de la entrega `Test n <ámbito> OK`.
 
-- una primera entrega `Test n Integración` en rojo, con las pruebas de
-  integración que correspondan a esa iteración;
-- una segunda entrega `Test n Integración OK` en verde, con la implementación
-  mínima para hacer pasar dichas pruebas de integración y mantener en verde
-  todas las pruebas unitarias acumuladas.
+El `<ámbito>` será `Servidor`, `Cliente` o `Integración`, según corresponda al
+plan obligatorio de iteraciones.
 
 Las pruebas se irán organizando por iteraciones dentro de cada archivo de test,
 con separadores o comentarios claros. Cada prueba deberá documentar:
@@ -286,9 +346,9 @@ opciones:
 - o dividir mejor las pruebas para conservar el estado RED de la iteración
   futura.
 
-El objetivo es garantizar que cada entrega `Test n` o `Test n Integración` pueda
-observarse realmente en estado RED antes de su correspondiente entrega
-`Test n OK` o `Test n Integración OK`.
+El objetivo es garantizar que cada entrega `Test n <ámbito>` pueda observarse
+realmente en estado RED antes de su correspondiente entrega
+`Test n <ámbito> OK`.
 
 En prácticas cliente-servidor o IPC, las pruebas unitarias podrán cubrir el uso
 real del mecanismo de comunicación cuando este forme parte de la responsabilidad
@@ -316,6 +376,11 @@ En una entrega de refactor:
 
 - no se modificarán tests,
 - no se introducirán nuevas funcionalidades.
+- no se incluirá código pendiente de la entrega `Test n OK`.
+
+La entrega `Refactor n` será siempre posterior y separada de la entrega
+`Test n OK` correspondiente. El código de refactorización no se anticipará ni se
+mezclará con la implementación mínima necesaria para dejar los tests en verde.
 
 Todos los tests deberán seguir pasando.
 
