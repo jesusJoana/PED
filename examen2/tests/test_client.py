@@ -112,5 +112,54 @@ class TestClienteIteracion2(unittest.TestCase):
             return test_socket.getsockname()[1]
 
 
+class TestClienteIteracion5(unittest.TestCase):
+    """Tests de la Iteración 5 - Cliente modificado."""
+
+    def test_cliente_pide_direccion_completa_y_envia_al_destino_indicado(self):
+        """Iteración 5. Requisito: pedir host:puerto y usar esa dirección."""
+        server = UDPServerLigero(responses=["OK 0", "RESULTADO 0", "OK"])
+        server.start()
+        input_stream = io.StringIO(f"{server.host}:{server.port}\n")
+        output = io.StringIO()
+
+        client = UDPTextSearchClient(
+            messages=["NUMERO", "BUSCAR nada", "SALIR"],
+            timeout=1,
+        )
+        client.run_interactive(input_stream=input_stream, output=output)
+        server.join()
+
+        self.assertEqual(["NUMERO", "BUSCAR nada", "SALIR"], server.received_messages)
+        self.assertIn("OK 0", output.getvalue())
+        self.assertIn("RESULTADO 0", output.getvalue())
+        self.assertIn("OK", output.getvalue())
+
+    def test_cliente_imprime_error_si_la_direccion_no_tiene_formato_valido(self):
+        """Iteración 5. Requisito: dirección completa inválida produce ERROR."""
+        input_stream = io.StringIO("direccion-sin-puerto\n")
+        output = io.StringIO()
+        client = UDPTextSearchClient(messages=["NUMERO"], timeout=0.1)
+
+        client.run_interactive(input_stream=input_stream, output=output)
+
+        self.assertIn("ERROR", output.getvalue())
+
+    def test_cliente_interactivo_imprime_error_si_no_consigue_comunicarse(self):
+        """Iteración 5. Requisito: error si no consigue comunicarse."""
+        unused_port = self._get_unused_udp_port()
+        input_stream = io.StringIO(f"127.0.0.1:{unused_port}\n")
+        output = io.StringIO()
+        client = UDPTextSearchClient(messages=["NUMERO"], timeout=0.1)
+
+        client.run_interactive(input_stream=input_stream, output=output)
+
+        self.assertIn("ERROR", output.getvalue())
+
+    def _get_unused_udp_port(self):
+        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as test_socket:
+            test_socket.bind(("127.0.0.1", 0))
+            return test_socket.getsockname()[1]
+
+
 if __name__ == "__main__":
     unittest.main()
