@@ -59,14 +59,8 @@ class ClienteTCP:
             while True:
                 mensaje = input("> ")
                 if mensaje == COMANDO_SALIDA:
-                    if self.puede_salir():
-                        print("Cliente desconectado correctamente.")
+                    if self._gestionar_comando_salida():
                         break
-                    print(
-                        "No puedes salir hasta enviar al menos "
-                        f"{self.mensajes_minimos} mensajes. "
-                        f"Has enviado {self.mensajes_enviados}."
-                    )
                     continue
 
                 self.enviar_e_imprimir(mensaje)
@@ -74,3 +68,20 @@ class ClienteTCP:
             print(f"ERROR: {error}")
         finally:
             self.cerrar()
+
+    def _gestionar_comando_salida(self):
+        """Gestiona el comando local SALIR sin enviarlo al servidor."""
+        if self.puede_salir():
+            print("Cliente desconectado correctamente.")
+            return True
+
+        self._mostrar_aviso_minimo_no_alcanzado()
+        return False
+
+    def _mostrar_aviso_minimo_no_alcanzado(self):
+        """Informa al usuario de cuantos mensajes faltan antes de salir."""
+        print(
+            "No puedes salir hasta enviar al menos "
+            f"{self.mensajes_minimos} mensajes. "
+            f"Has enviado {self.mensajes_enviados}."
+        )
