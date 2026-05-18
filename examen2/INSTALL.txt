@@ -1,0 +1,128 @@
+INSTALL - EXAMEN2
+=================
+
+Requisitos
+----------
+
+- Sistema Linux.
+- Python 3.
+- make.
+- Acceso de lectura a /etc/passwd y /etc/services.
+
+No hay dependencias externas obligatorias.
+
+
+Preparacion del entorno
+-----------------------
+
+Desde la carpeta del proyecto:
+
+    cd /home/jjoana/ejerciciosPED/PED/examen2
+
+Crear el entorno virtual:
+
+    make install
+
+El objetivo install crea la carpeta venv y actualiza pip. Si existe un fichero
+requirements.txt, instala tambien sus dependencias.
+
+
+Ejecucion de pruebas
+--------------------
+
+Para ejecutar las pruebas automatizadas:
+
+    make test
+
+El Makefile usa venv/bin/python si existe. Si no existe, usa python3.
+
+
+Arranque del servidor
+---------------------
+
+Para arrancar el servidor UDP en el host y puerto por defecto:
+
+    make server
+
+Valores por defecto:
+
+- Host: 127.0.0.1
+- Puerto: 16063
+
+Si el puerto 16063 esta ocupado, puede usarse temporalmente otro puerto con la
+variable de entorno PED_PORT:
+
+    PED_PORT=17064 make server
+
+
+Arranque del cliente
+--------------------
+
+En otra terminal:
+
+    make client
+
+El cliente pide la direccion completa del servidor y la peticion.
+
+Ejemplo usando el puerto por defecto:
+
+    127.0.0.1:16063
+    BUSCAR ssh
+
+Si el servidor se arranco con otro puerto, el cliente debe usar el mismo:
+
+    127.0.0.1:17064
+    BUSCAR ssh
+
+
+Comandos utiles
+---------------
+
+Ejecutar servidor:
+
+    make server
+
+Ejecutar cliente:
+
+    make client
+
+Ejecutar pruebas:
+
+    make test
+
+Limpiar caches de Python:
+
+    make clean
+
+Guardar dependencias instaladas:
+
+    make freeze
+
+
+Comprobacion de salida estandar y error estandar
+------------------------------------------------
+
+Para comprobar que el servidor escribe el registro de mensajes en stderr:
+
+    make server > /tmp/server_stdout.txt 2> /tmp/server_stderr.txt &
+    make client
+    cat /tmp/server_stderr.txt
+
+Ejemplo esperado en /tmp/server_stderr.txt:
+
+    127.0.0.1 BUSCAR ssh
+
+Si aparece el error:
+
+    OSError: [Errno 98] Address already in use
+
+significa que el puerto ya esta ocupado por otro servidor. En ese caso se puede
+cerrar el proceso anterior o usar otro puerto temporal:
+
+    PED_PORT=17064 make server > /tmp/server_stdout.txt 2> /tmp/server_stderr.txt &
+    make client
+
+Y en el cliente introducir:
+
+    127.0.0.1:17064
+    NUMERO
