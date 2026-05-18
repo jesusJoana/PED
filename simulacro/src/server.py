@@ -31,8 +31,12 @@ class ServidorTCP:
             while max_conexiones is None or conexiones_atendidas < max_conexiones:
                 conexion, _ = servidor.accept()
                 with conexion:
-                    datos = conexion.recv(TAMANO_BUFFER)
-                    mensaje = datos.decode(CODIFICACION)
-                    respuesta = self.procesar_mensaje(mensaje)
-                    conexion.sendall(respuesta.encode(CODIFICACION))
+                    self._atender_conexion(conexion)
                 conexiones_atendidas += 1
+
+    def _atender_conexion(self, conexion):
+        """Atiende una conexion TCP individual del cliente."""
+        datos = conexion.recv(TAMANO_BUFFER)
+        mensaje = datos.decode(CODIFICACION)
+        respuesta = self.procesar_mensaje(mensaje)
+        conexion.sendall(respuesta.encode(CODIFICACION))
