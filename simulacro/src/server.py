@@ -19,7 +19,7 @@ class ServidorTCP:
             return datetime.now().strftime("%H:%M:%S")
         return "ERROR"
 
-    def iniciar(self, max_conexiones=None):
+    def iniciar(self, max_conexiones=None, evento_listo=None):
         """Inicia el servidor; en ejecucion normal queda atendiendo siempre."""
         conexiones_atendidas = 0
 
@@ -27,6 +27,8 @@ class ServidorTCP:
             servidor.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             servidor.bind((self.host, self.puerto))
             servidor.listen()
+            if evento_listo is not None:
+                evento_listo.set()
 
             while max_conexiones is None or conexiones_atendidas < max_conexiones:
                 conexion, _ = servidor.accept()

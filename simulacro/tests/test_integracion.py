@@ -2,7 +2,6 @@ import io
 import re
 import socket
 import threading
-import time
 import unittest
 from contextlib import redirect_stdout
 from unittest.mock import patch
@@ -24,13 +23,14 @@ class TestIntegracionClienteServidor(unittest.TestCase):
         """Arranca el servidor real en un hilo controlado por la prueba."""
         puerto = self.obtener_puerto_libre()
         servidor = ServidorTCP(host="127.0.0.1", puerto=puerto)
+        evento_listo = threading.Event()
         hilo = threading.Thread(
             target=servidor.iniciar,
-            kwargs={"max_conexiones": max_conexiones},
+            kwargs={"max_conexiones": max_conexiones, "evento_listo": evento_listo},
             daemon=True,
         )
         hilo.start()
-        time.sleep(0.1)
+        self.assertTrue(evento_listo.wait(timeout=2))
         return hilo, puerto
 
     # Iteracion 3 - Requisito: cliente y servidor reales intercambian FECHA.

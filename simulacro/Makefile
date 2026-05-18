@@ -2,9 +2,8 @@ PYTHON=python3
 VENV=venv
 PIP=$(VENV)/bin/pip
 PY=$(VENV)/bin/python
-FILE?=$(CURDIR)/fichero.txt
 
-.PHONY: install test run server client clean freeze
+.PHONY: install test run run-server run-client server client clean freeze
 
 install:
 	$(PYTHON) -m venv $(VENV)
@@ -15,13 +14,19 @@ test:
 	$(PY) -m unittest discover -s tests -v
 
 run:
-	$(PY) src/main.py client $(FILE)
+	$(PY) main.py cliente
+
+run-server:
+	$(PY) main.py servidor
+
+run-client:
+	$(PY) main.py cliente
 
 server:
-	$(PY) src/main.py server
+	$(PY) main.py servidor
 
 client:
-	$(PY) src/main.py client $(FILE)
+	$(PY) main.py cliente
 
 clean:
 	find . -type d -name "__pycache__" -exec rm -rf {} +
