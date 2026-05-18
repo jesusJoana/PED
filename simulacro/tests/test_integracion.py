@@ -2,6 +2,7 @@ import io
 import re
 import socket
 import threading
+import time
 import unittest
 from contextlib import redirect_stdout
 from unittest.mock import patch
@@ -29,6 +30,7 @@ class TestIntegracionClienteServidor(unittest.TestCase):
             daemon=True,
         )
         hilo.start()
+        time.sleep(0.1)
         return hilo, puerto
 
     # Iteracion 3 - Requisito: cliente y servidor reales intercambian FECHA.

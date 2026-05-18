@@ -36,7 +36,11 @@ class ServidorTCP:
 
     def _atender_conexion(self, conexion):
         """Atiende una conexion TCP individual del cliente."""
-        datos = conexion.recv(TAMANO_BUFFER)
-        mensaje = datos.decode(CODIFICACION)
-        respuesta = self.procesar_mensaje(mensaje)
-        conexion.sendall(respuesta.encode(CODIFICACION))
+        while True:
+            datos = conexion.recv(TAMANO_BUFFER)
+            if not datos:
+                break
+
+            mensaje = datos.decode(CODIFICACION)
+            respuesta = self.procesar_mensaje(mensaje)
+            conexion.sendall(respuesta.encode(CODIFICACION))
