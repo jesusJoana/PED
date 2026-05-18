@@ -1,0 +1,142 @@
+INSTALL
+=======
+
+Requisitos previos
+------------------
+
+Sistema recomendado:
+
+- Linux.
+- Python 3.
+- make.
+
+No se requieren dependencias externas para ejecutar la aplicacion. Se utilizan
+unicamente modulos de la libreria estandar de Python.
+
+
+Preparacion del entorno
+-----------------------
+
+Entrar en la carpeta del proyecto:
+
+cd ~/ejerciciosPED/PED/simulacro
+
+Crear el entorno virtual e instalar dependencias, si existieran:
+
+make install
+
+Este comando crea la carpeta venv y actualiza pip. Si existe un fichero
+requirements.txt, tambien instala su contenido.
+
+
+Ejecucion de pruebas
+--------------------
+
+Ejecutar la bateria completa de pruebas:
+
+make test
+
+El comando ejecuta:
+
+venv/bin/python -m unittest discover -s tests -v
+
+Las pruebas incluyen:
+
+- pruebas unitarias del servidor,
+- pruebas unitarias del cliente,
+- pruebas de integracion con cliente y servidor reales usando sockets TCP.
+
+
+Puesta en marcha del sistema
+----------------------------
+
+1. Abrir una primera terminal.
+
+2. Entrar en la carpeta del proyecto:
+
+   cd ~/ejerciciosPED/PED/simulacro
+
+3. Lanzar el servidor:
+
+   make server
+
+   Alternativa equivalente:
+
+   make run-server
+
+4. Abrir una segunda terminal.
+
+5. Entrar de nuevo en la carpeta del proyecto:
+
+   cd ~/ejerciciosPED/PED/simulacro
+
+6. Lanzar el cliente:
+
+   make client
+
+   Alternativa equivalente:
+
+   make run-client
+
+7. Escribir mensajes en el cliente:
+
+   FECHA
+   HORA
+   cualquier otro texto
+
+8. Para cerrar el cliente, escribir:
+
+   SALIR
+
+   El cliente solo se cerrara si ya ha enviado al menos 3 mensajes al servidor.
+
+
+Comandos disponibles
+--------------------
+
+make install
+    Crea el entorno virtual venv y prepara dependencias.
+
+make test
+    Ejecuta todos los tests con unittest.
+
+make server
+    Lanza el servidor TCP.
+
+make client
+    Lanza el cliente interactivo.
+
+make run-server
+    Alias para lanzar el servidor TCP.
+
+make run-client
+    Alias para lanzar el cliente interactivo.
+
+make clean
+    Elimina ficheros temporales de Python.
+
+make freeze
+    Genera requirements.txt con las dependencias del entorno virtual.
+
+
+Configuracion
+-------------
+
+La configuracion principal se encuentra en src/config.py:
+
+HOST_SERVIDOR = "127.0.0.1"
+PUERTO_SERVIDOR = 16063
+TAMANO_BUFFER = 1024
+CODIFICACION = "utf-8"
+MIN_MENSAJES_CLIENTE = 3
+COMANDO_SALIDA = "SALIR"
+
+
+Notas de ejecucion
+------------------
+
+El servidor esta disenado para ejecutarse de forma continua y aceptar clientes.
+
+Cuando se detiene manualmente con Ctrl+C, el proceso se interrumpe desde la
+terminal. Esto no afecta al funcionamiento del protocolo ni a las pruebas
+automatizadas.
