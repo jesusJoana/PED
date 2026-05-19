@@ -1,5 +1,6 @@
 import sys
 
+from src.client import LetterCountClient
 from src.server import LetterCountServer
 
 
@@ -11,6 +12,11 @@ def main():
     if sys.argv[1] == "servidor":
         server = LetterCountServer()
         server.start()
+        return 0
+
+    if sys.argv[1] == "cliente":
+        client = LetterCountClient()
+        client.run_interactive(message_count=3)
         return 0
 
     print("Modo no reconocido")
