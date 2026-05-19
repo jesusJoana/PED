@@ -111,6 +111,8 @@ Responsabilidad:
 - Imprimir las respuestas en salida estandar.
 - Gestionar errores de conexion.
 - En la iteracion 5, preguntar al usuario la direccion completa del servidor.
+- En la iteracion 5, mantener el cliente abierto hasta que el usuario escriba
+  `SALIR`.
 
 ### Punto de entrada
 
@@ -327,6 +329,9 @@ Objetivo:
 - Modificar el cliente para que pregunte al usuario por la direccion completa
   del servidor.
 - Imprimir un error si no consigue realizar la conexion.
+- Permitir que el usuario envie tantos mensajes como quiera.
+- Cerrar el cliente cuando el usuario escriba `SALIR`.
+- Tratar `SALIR` como una orden local del cliente, sin enviarla al servidor.
 
 Archivo de pruebas:
 
@@ -337,6 +342,9 @@ Pruebas previstas:
 - El cliente solicita host y puerto al usuario.
 - El cliente conecta usando la direccion introducida.
 - El cliente imprime error si la conexion falla.
+- El cliente permanece leyendo mensajes hasta recibir `SALIR`.
+- El cliente no envia `SALIR` al servidor.
+- El cliente termina correctamente al recibir `SALIR`.
 
 Entregas:
 

@@ -1,18 +1,12 @@
 import importlib
+import io
 import socket
 import threading
 import time
 import unittest
 
 
-class TestServidorIteracion1(unittest.TestCase):
-    """
-    Iteracion 1 - Servidor.
-
-    Estas pruebas validan que el servidor TCP acepta conexiones reales, recibe
-    mensajes UTF-8 y responde segun el protocolo de conteo de letras.
-    """
-
+class ServerTestHelpers:
     HOST = "127.0.0.1"
 
     def _crear_servidor(self, max_connections=1):
@@ -55,6 +49,15 @@ class TestServidorIteracion1(unittest.TestCase):
             respuesta = sock.recv(4096)
 
         return respuesta.decode("utf-8")
+
+
+class TestServidorIteracion1(ServerTestHelpers, unittest.TestCase):
+    """
+    Iteracion 1 - Servidor.
+
+    Estas pruebas validan que el servidor TCP acepta conexiones reales, recibe
+    mensajes UTF-8 y responde segun el protocolo de conteo de letras.
+    """
 
     def test_responde_conteo_de_una_letra(self):
         """
@@ -112,3 +115,65 @@ class TestServidorIteracion1(unittest.TestCase):
 
         self.assertEqual("p:1", primera)
         self.assertEqual("d:1", segunda)
+
+
+class TestServidorIteracion4(ServerTestHelpers, unittest.TestCase):
+    """
+    Iteracion 4 - Servidor modificado.
+
+    Estas pruebas validan que el servidor escribe en error estandar una linea
+    por conexion con la IP del cliente y el mensaje recibido.
+    """
+
+    def _crear_servidor(self, max_connections=1):
+        modulo = importlib.import_module("src.server")
+        servidor_cls = modulo.LetterCountServer
+        self.error_output = io.StringIO()
+        return servidor_cls(
+            host=self.HOST,
+            port=0,
+            max_connections=max_connections,
+            timeout=1.0,
+            error_output=self.error_output,
+        )
+
+    def test_escribe_ip_del_cliente_en_error_estandar(self):
+        """
+        Iteracion 4.
+        Requisito: el servidor registra en stderr la IP de cada cliente.
+        """
+        servidor = self._arrancar_servidor()
+
+        respuesta = self._enviar_mensaje(servidor.port, "p:ped")
+
+        self.assertEqual("p:1", respuesta)
+        self.assertIn("127.0.0.1", self.error_output.getvalue())
+
+    def test_escribe_mensaje_recibido_en_error_estandar(self):
+        """
+        Iteracion 4.
+        Requisito: el servidor registra en stderr el mensaje recibido.
+        """
+        servidor = self._arrancar_servidor()
+
+        respuesta = self._enviar_mensaje(servidor.port, "a,A:aAaA")
+
+        self.assertEqual("a:2,A:2", respuesta)
+        self.assertIn("a,A:aAaA", self.error_output.getvalue())
+
+    def test_escribe_una_linea_por_conexion_en_error_estandar(self):
+        """
+        Iteracion 4.
+        Requisito: el servidor escribe una linea de log por cada conexion.
+        """
+        servidor = self._arrancar_servidor(max_connections=2)
+
+        primera = self._enviar_mensaje(servidor.port, "p:ped")
+        segunda = self._enviar_mensaje(servidor.port, "d:ped")
+
+        lineas = self.error_output.getvalue().splitlines()
+        self.assertEqual("p:1", primera)
+        self.assertEqual("d:1", segunda)
+        self.assertEqual(2, len(lineas))
+        self.assertIn("p:ped", lineas[0])
+        self.assertIn("d:ped", lineas[1])
