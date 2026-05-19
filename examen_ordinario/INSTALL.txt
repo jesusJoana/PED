@@ -1,0 +1,184 @@
+Instalacion y ejecucion
+=======================
+
+Requisitos
+----------
+
+- Sistema Linux.
+- Python 3.
+- make.
+- Acceso a una terminal.
+
+No se necesitan dependencias externas obligatorias.
+
+
+Preparacion del entorno
+-----------------------
+
+Desde la carpeta del proyecto:
+
+cd examen_ordinario
+
+Crear el entorno virtual e instalar dependencias si existieran:
+
+make install
+
+Este comando crea la carpeta venv y prepara pip.
+
+
+Ejecucion de pruebas
+--------------------
+
+Para ejecutar todas las pruebas:
+
+make test
+
+Las pruebas se ejecutan con unittest:
+
+venv/bin/python -m unittest discover -s tests -v
+
+
+Arranque del servidor
+---------------------
+
+Para arrancar el servidor TCP:
+
+make server
+
+Tambien se puede usar:
+
+make run-server
+
+El servidor escucha por defecto en:
+
+127.0.0.1:16063
+
+El proceso queda en ejecucion continua hasta que se interrumpa manualmente, por
+ejemplo con Ctrl+C.
+
+Si el puerto ya esta ocupado, aparecera un error similar a:
+
+OSError: [Errno 98] Address already in use
+
+En ese caso, normalmente ya hay otro servidor ejecutandose en el puerto 16063.
+Se puede cerrar ese servidor con Ctrl+C en la terminal donde este arrancado y
+volver a ejecutar make server.
+
+
+Arranque del cliente
+--------------------
+
+En otra terminal, desde la carpeta del proyecto:
+
+make client
+
+Tambien se puede usar:
+
+make run-client
+
+El cliente pedira la direccion completa del servidor en formato host:puerto.
+
+Ejemplo:
+
+127.0.0.1:16063
+
+Despues se pueden escribir mensajes del protocolo. Para terminar el cliente,
+escribir:
+
+SALIR
+
+SALIR no se envia al servidor. Solo sirve para cerrar el cliente.
+
+Ejemplo de prueba manual del cliente:
+
+1. En una terminal, arrancar el servidor:
+
+make server
+
+2. En otra terminal, arrancar el cliente:
+
+make client
+
+3. Cuando el cliente pida la direccion del servidor, escribir:
+
+127.0.0.1:16063
+
+4. Escribir estos mensajes:
+
+p,a:me gusta ped
+c:casa con coco
+mensaje sin formato
+SALIR
+
+5. El cliente deberia mostrar:
+
+p:1,a:1
+c:4
+ERROR
+
+6. Al escribir SALIR, el cliente termina. El texto SALIR no aparece en las
+trazas del servidor porque no se envia por TCP.
+
+
+Uso de stderr y redireccion a fichero
+-------------------------------------
+
+El servidor imprime por stderr una linea cada vez que recibe una conexion.
+stderr significa standard error o salida de error estandar.
+
+En Linux, cada proceso tiene tres canales estandar:
+
+0 -> stdin  entrada estandar
+1 -> stdout salida estandar
+2 -> stderr salida de error estandar
+
+El servidor usa stderr para las trazas de diagnostico, por ejemplo:
+
+127.0.0.1 p,a:me gusta ped
+
+Esto no es una respuesta al cliente. La respuesta real se envia por el socket
+TCP y la imprime el cliente.
+
+Para guardar las trazas del servidor en un fichero:
+
+make server 2> servidor.log
+
+El operador 2> redirige stderr al fichero indicado. En este caso, las lineas de
+diagnostico se guardan en servidor.log. Ese fichero es un log local de la
+ejecucion del servidor.
+
+Para ver el contenido del log:
+
+cat servidor.log
+
+Tambien se puede separar stdout y stderr:
+
+make server > salida.log 2> servidor.log
+
+Y se pueden juntar ambos canales en un unico fichero:
+
+make server > todo.log 2>&1
+
+
+Comandos utiles
+---------------
+
+Instalar entorno:
+
+make install
+
+Ejecutar tests:
+
+make test
+
+Arrancar servidor:
+
+make server
+
+Arrancar cliente:
+
+make client
+
+Limpiar caches de Python:
+
+make clean
