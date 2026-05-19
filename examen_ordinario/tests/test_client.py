@@ -33,7 +33,11 @@ class SimpleTcpTestServer:
             self._ready.set()
 
             for response in self.responses:
-                client_socket, _client_address = server_socket.accept()
+                try:
+                    client_socket, _client_address = server_socket.accept()
+                except TimeoutError:
+                    return
+
                 with client_socket:
                     message = self._receive_message(client_socket)
                     self.received_messages.append(message)
@@ -122,4 +126,98 @@ class TestClienteIteracion2(unittest.TestCase):
         response = client.send_message("p:ped")
 
         self.assertIsNone(response)
+        self.assertIn("ERROR", output.getvalue())
+
+
+class TestClienteIteracion5(unittest.TestCase):
+    """
+    Iteracion 5 - Cliente modificado.
+
+    Estas pruebas validan que el cliente pregunta la direccion completa del
+    servidor, informa errores de conexion y permite enviar mensajes hasta que
+    el usuario escribe SALIR.
+    """
+
+    def _crear_cliente(self, output=None, input_stream=None):
+        modulo = importlib.import_module("src.client")
+        client_cls = modulo.LetterCountClient
+        return client_cls(
+            timeout=1.0,
+            output=output,
+            input_stream=input_stream,
+        )
+
+    def test_pide_direccion_completa_y_conecta_con_host_puerto(self):
+        """
+        Iteracion 5.
+        Requisito: el cliente solicita la direccion completa del servidor en
+        formato host:puerto y conecta usando esos datos.
+        """
+        output = io.StringIO()
+        server = SimpleTcpTestServer(["p:1"])
+        server.start()
+        self.addCleanup(server.join)
+        input_stream = io.StringIO(f"{server.host}:{server.port}\np:ped\nSALIR\n")
+        client = self._crear_cliente(output=output, input_stream=input_stream)
+
+        client.run_configured_interactive()
+        server.join()
+
+        self.assertEqual(["p:ped"], server.received_messages)
+        self.assertIn("Direccion del servidor", output.getvalue())
+        self.assertIn("p:1", output.getvalue())
+
+    def test_envia_mensajes_hasta_recibir_salir(self):
+        """
+        Iteracion 5.
+        Requisito: el cliente permanece abierto leyendo mensajes hasta que el
+        usuario escribe SALIR.
+        """
+        output = io.StringIO()
+        server = SimpleTcpTestServer(["p:1", "d:1"])
+        server.start()
+        self.addCleanup(server.join)
+        input_stream = io.StringIO(
+            f"{server.host}:{server.port}\np:ped\nd:ped\nSALIR\np:otro\n"
+        )
+        client = self._crear_cliente(output=output, input_stream=input_stream)
+
+        client.run_configured_interactive()
+        server.join()
+
+        self.assertEqual(["p:ped", "d:ped"], server.received_messages)
+        self.assertIn("p:1", output.getvalue())
+        self.assertIn("d:1", output.getvalue())
+
+    def test_no_envia_salir_al_servidor(self):
+        """
+        Iteracion 5.
+        Requisito: SALIR es una orden local del cliente y no se envia al
+        servidor.
+        """
+        output = io.StringIO()
+        server = SimpleTcpTestServer(["x:3"])
+        server.start()
+        self.addCleanup(server.join)
+        input_stream = io.StringIO(f"{server.host}:{server.port}\nx:xxx\nSALIR\n")
+        client = self._crear_cliente(output=output, input_stream=input_stream)
+
+        client.run_configured_interactive()
+        server.join()
+
+        self.assertEqual(["x:xxx"], server.received_messages)
+        self.assertNotIn("SALIR", server.received_messages)
+
+    def test_imprime_error_si_no_consigue_conectar(self):
+        """
+        Iteracion 5.
+        Requisito: el cliente imprime un error si no consigue realizar la
+        conexion con la direccion indicada por el usuario.
+        """
+        output = io.StringIO()
+        input_stream = io.StringIO("127.0.0.1:1\np:ped\nSALIR\n")
+        client = self._crear_cliente(output=output, input_stream=input_stream)
+
+        client.run_configured_interactive()
+
         self.assertIn("ERROR", output.getvalue())
