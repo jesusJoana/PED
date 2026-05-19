@@ -1,4 +1,5 @@
 import socket
+import sys
 
 from src.protocol import LetterCountProtocol
 
@@ -8,11 +9,19 @@ class LetterCountServer:
 
     BUFFER_SIZE = 4096
 
-    def __init__(self, host="127.0.0.1", port=16063, max_connections=None, timeout=None):
+    def __init__(
+        self,
+        host="127.0.0.1",
+        port=16063,
+        max_connections=None,
+        timeout=None,
+        error_output=None,
+    ):
         self.host = host
         self.port = port
         self.max_connections = max_connections
         self.timeout = timeout
+        self.error_output = error_output if error_output is not None else sys.stderr
         self.protocol = LetterCountProtocol()
         self._running = False
         self._server_socket = None
@@ -26,11 +35,15 @@ class LetterCountServer:
             self._prepare_server_socket(server_socket)
 
             while self._should_continue(handled_connections):
-                client_socket = self._accept_client(server_socket)
+                accepted_client = self._accept_client(server_socket)
+                if accepted_client is None:
+                    continue
+
+                client_socket, client_address = accepted_client
                 if client_socket is None:
                     continue
 
-                self._handle_client(client_socket)
+                self._handle_client(client_socket, client_address)
                 handled_connections += 1
 
         self._server_socket = None
@@ -47,8 +60,7 @@ class LetterCountServer:
 
     def _accept_client(self, server_socket):
         try:
-            client_socket, _client_address = server_socket.accept()
-            return client_socket
+            return server_socket.accept()
         except socket.timeout:
             return None
         except OSError:
@@ -72,14 +84,19 @@ class LetterCountServer:
 
         return attended_connections < self.max_connections
 
-    def _handle_client(self, client_socket):
+    def _handle_client(self, client_socket, client_address):
         with client_socket:
             if self.timeout is not None:
                 client_socket.settimeout(self.timeout)
 
             message = self._receive_message(client_socket)
+            self._log_connection(client_address, message)
             response = self.protocol.process(message)
             client_socket.sendall(response.encode("utf-8"))
+
+    def _log_connection(self, client_address, message):
+        client_ip = client_address[0]
+        print(f"{client_ip} {message}", file=self.error_output)
 
     def _receive_message(self, client_socket):
         chunks = []
