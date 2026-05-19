@@ -26,12 +26,9 @@ class LetterCountServer:
             self._prepare_server_socket(server_socket)
 
             while self._should_continue(handled_connections):
-                try:
-                    client_socket, _client_address = server_socket.accept()
-                except socket.timeout:
+                client_socket = self._accept_client(server_socket)
+                if client_socket is None:
                     continue
-                except OSError:
-                    break
 
                 self._handle_client(client_socket)
                 handled_connections += 1
@@ -47,6 +44,16 @@ class LetterCountServer:
         server_socket.bind((self.host, self.port))
         self.port = server_socket.getsockname()[1]
         server_socket.listen()
+
+    def _accept_client(self, server_socket):
+        try:
+            client_socket, _client_address = server_socket.accept()
+            return client_socket
+        except socket.timeout:
+            return None
+        except OSError:
+            self._running = False
+            return None
 
     def stop(self):
         self._running = False
