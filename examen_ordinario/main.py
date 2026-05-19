@@ -9,14 +9,16 @@ def main():
         print("Uso: python main.py servidor")
         return 1
 
-    if sys.argv[1] == "servidor":
+    mode = sys.argv[1]
+
+    if mode == "servidor":
         server = LetterCountServer()
         server.start()
         return 0
 
-    if sys.argv[1] == "cliente":
+    if mode == "cliente":
         client = LetterCountClient()
-        client.run_interactive(message_count=3)
+        client.run_interactive()
         return 0
 
     print("Modo no reconocido")
