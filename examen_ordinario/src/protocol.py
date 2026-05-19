@@ -13,11 +13,7 @@ class LetterCountProtocol:
         if not self._valid_letters(letters):
             return self.ERROR_RESPONSE
 
-        counts = []
-        for letter in letters:
-            counts.append(f"{letter}:{phrase.count(letter)}")
-
-        return ",".join(counts)
+        return ",".join(self._format_count(letter, phrase) for letter in letters)
 
     def _valid_letters(self, letters):
         if not letters:
@@ -28,3 +24,6 @@ class LetterCountProtocol:
                 return False
 
         return True
+
+    def _format_count(self, letter, phrase):
+        return f"{letter}:{phrase.count(letter)}"

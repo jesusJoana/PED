@@ -19,19 +19,13 @@ class LetterCountServer:
 
     def start(self):
         self._running = True
-        attended_connections = 0
+        handled_connections = 0
 
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server_socket:
             self._server_socket = server_socket
-            server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-            if self.timeout is not None:
-                server_socket.settimeout(self.timeout)
+            self._prepare_server_socket(server_socket)
 
-            server_socket.bind((self.host, self.port))
-            self.port = server_socket.getsockname()[1]
-            server_socket.listen()
-
-            while self._should_continue(attended_connections):
+            while self._should_continue(handled_connections):
                 try:
                     client_socket, _client_address = server_socket.accept()
                 except socket.timeout:
@@ -40,10 +34,19 @@ class LetterCountServer:
                     break
 
                 self._handle_client(client_socket)
-                attended_connections += 1
+                handled_connections += 1
 
         self._server_socket = None
         self._running = False
+
+    def _prepare_server_socket(self, server_socket):
+        server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        if self.timeout is not None:
+            server_socket.settimeout(self.timeout)
+
+        server_socket.bind((self.host, self.port))
+        self.port = server_socket.getsockname()[1]
+        server_socket.listen()
 
     def stop(self):
         self._running = False
