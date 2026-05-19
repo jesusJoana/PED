@@ -9,6 +9,7 @@ class LetterCountClient:
     DEFAULT_HOST = "127.0.0.1"
     DEFAULT_PORT = 16063
     DEFAULT_MESSAGE_COUNT = 3
+    EXIT_COMMAND = "SALIR"
 
     def __init__(
         self,
@@ -38,6 +39,13 @@ class LetterCountClient:
         for message in self._read_messages(message_count):
             self.send_message(message)
 
+    def run_configured_interactive(self):
+        if not self._configure_server_from_input():
+            return
+
+        for message in self._read_messages_until_exit():
+            self.send_message(message)
+
     def _send_and_receive(self, message):
         with socket.create_connection(
             (self.host, self.port),
@@ -56,6 +64,47 @@ class LetterCountClient:
                 return
 
             yield message.rstrip("\n")
+
+    def _configure_server_from_input(self):
+        print("Direccion del servidor (host:puerto):", file=self.output)
+        address = self.input_stream.readline().strip()
+
+        try:
+            host, port = self._parse_address(address)
+        except ValueError as error:
+            self._print_error(error)
+            return False
+
+        self.host = host
+        self.port = port
+        return True
+
+    def _parse_address(self, address):
+        if ":" not in address:
+            raise ValueError("direccion invalida")
+
+        host, port_text = address.rsplit(":", 1)
+        if host == "" or port_text == "":
+            raise ValueError("direccion invalida")
+
+        try:
+            port = int(port_text)
+        except ValueError as error:
+            raise ValueError("puerto invalido") from error
+
+        return host, port
+
+    def _read_messages_until_exit(self):
+        while True:
+            message = self.input_stream.readline()
+            if message == "":
+                return
+
+            clean_message = message.rstrip("\n")
+            if clean_message == self.EXIT_COMMAND:
+                return
+
+            yield clean_message
 
     def _print_response(self, response):
         print(response, file=self.output)

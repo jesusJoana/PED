@@ -1,1 +1,18 @@
 127.0.0.1 p,M,e:Me gusta ped
+Traceback (most recent call last):
+  File "/home/jjoana/ejerciciosPED/PED/examen_ordinario/main.py", line 29, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/home/jjoana/ejerciciosPED/PED/examen_ordinario/main.py", line 16, in main
+    server.start()
+  File "/home/jjoana/ejerciciosPED/PED/examen_ordinario/src/server.py", line 38, in start
+    accepted_client = self._accept_client(server_socket)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/jjoana/ejerciciosPED/PED/examen_ordinario/src/server.py", line 63, in _accept_client
+    except OSError:
+               ^^^^^
+  File "/usr/lib/python3.12/socket.py", line 295, in accept
+    fd, addr = self._accept()
+               ^^^^^^^^^^^^^^
+KeyboardInterrupt
+make: *** [Makefile:26: server] Interrupt

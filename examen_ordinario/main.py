@@ -18,7 +18,7 @@ def main():
 
     if mode == "cliente":
         client = LetterCountClient()
-        client.run_interactive()
+        client.run_configured_interactive()
         return 0
 
     print("Modo no reconocido")
