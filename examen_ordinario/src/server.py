@@ -40,9 +40,6 @@ class LetterCountServer:
                     continue
 
                 client_socket, client_address = accepted_client
-                if client_socket is None:
-                    continue
-
                 self._handle_client(client_socket, client_address)
                 handled_connections += 1
 
@@ -75,14 +72,14 @@ class LetterCountServer:
             except OSError:
                 pass
 
-    def _should_continue(self, attended_connections):
+    def _should_continue(self, handled_connections):
         if not self._running:
             return False
 
         if self.max_connections is None:
             return True
 
-        return attended_connections < self.max_connections
+        return handled_connections < self.max_connections
 
     def _handle_client(self, client_socket, client_address):
         with client_socket:
