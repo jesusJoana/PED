@@ -66,8 +66,7 @@ class LetterCountClient:
             yield message.rstrip("\n")
 
     def _configure_server_from_input(self):
-        print("Direccion del servidor (host:puerto):", file=self.output)
-        address = self.input_stream.readline().strip()
+        address = self._ask_server_address()
 
         try:
             host, port = self._parse_address(address)
@@ -75,9 +74,16 @@ class LetterCountClient:
             self._print_error(error)
             return False
 
+        self._set_server_address(host, port)
+        return True
+
+    def _ask_server_address(self):
+        print("Direccion del servidor (host:puerto):", file=self.output)
+        return self.input_stream.readline().strip()
+
+    def _set_server_address(self, host, port):
         self.host = host
         self.port = port
-        return True
 
     def _parse_address(self, address):
         if ":" not in address:
@@ -101,10 +107,13 @@ class LetterCountClient:
                 return
 
             clean_message = message.rstrip("\n")
-            if clean_message == self.EXIT_COMMAND:
+            if self._is_exit_command(clean_message):
                 return
 
             yield clean_message
+
+    def _is_exit_command(self, message):
+        return message == self.EXIT_COMMAND
 
     def _print_response(self, response):
         print(response, file=self.output)
